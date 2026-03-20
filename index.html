@@ -9,7 +9,7 @@
         body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; }
         .container { width: 100%; max-width: 700px; position: relative; }
         
-        /* Header & Profile Preview */
+        /* Header & Profile Hover */
         .hero-wrapper { position: relative; width: 100%; margin-bottom: 30px; }
         .hero { border: 2px solid var(--orange); border-radius: 12px; padding: 30px; text-align: center; background: rgba(0,0,0,0.4); transition: 0.3s; text-decoration: none; display: block; }
         .hero:hover { background: rgba(243, 156, 18, 0.1); transform: translateY(-2px); }
@@ -17,7 +17,7 @@
 
         .profile-preview {
             display: none; position: absolute; top: 110%; left: 50%; transform: translateX(-50%);
-            width: 320px; background: var(--bsky); border: 2px solid white; border-radius: 15px; overflow: hidden; z-index: 1000;
+            width: 320px; background: var(--bsky); border: 2px solid white; border-radius: 15px; overflow: hidden; z-index: 2000;
             box-shadow: 0 10px 30px rgba(0,0,0,0.8); pointer-events: none;
         }
         .hero-wrapper:hover .profile-preview { display: block; }
@@ -29,8 +29,13 @@
         .item { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; background: rgba(42, 36, 32, 0.4); cursor: pointer; position: relative; transition: 0.2s; }
         .item:hover { background: rgba(243, 156, 18, 0.1); border-left: 2px solid var(--orange); }
         
-        /* Hover Briefing - Positioned Right */
-        .briefing { display: none; position: absolute; left: 102%; top: 0; width: 280px; background: var(--panel); border: 1px solid var(--orange); padding: 15px; z-index: 100; border-radius: 8px; font-size: 0.85rem; pointer-events: none; box-shadow: 5px 5px 15px rgba(0,0,0,0.6); line-height: 1.4; color: #f1c40f; }
+        /* Fixed Hover Briefing */
+        .briefing { 
+            display: none; position: absolute; left: 102%; top: 0; width: 280px; 
+            background: var(--panel); border: 1px solid var(--orange); padding: 15px; 
+            z-index: 1500; border-radius: 8px; font-size: 0.85rem; pointer-events: none; 
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.6); line-height: 1.4; color: #f1c40f; 
+        }
         .item:hover .briefing { display: block; }
 
         .check { width: 18px; height: 18px; border: 1px solid var(--border); margin-right: 15px; border-radius: 3px; flex-shrink: 0; }
@@ -39,7 +44,7 @@
         .done .check { background: var(--green); border-color: var(--green); position: relative; }
         .done .check::after { content: '✕'; color: white; font-size: 14px; position: absolute; left: 2px; top: -2px; }
 
-        /* Navigation & Detail View */
+        /* Navigation */
         #detail-view { display: none; width: 100%; max-width: 700px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 40px; box-sizing: border-box; }
         .nav-row { display: flex; justify-content: space-between; margin-top: 40px; }
         .nav-btn { background: #1f2937; border: 1px solid var(--border); color: var(--text); padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
@@ -60,7 +65,7 @@
             </div>
         </div>
         
-        <div id="list">Synchronizing with secure database...</div>
+        <div id="list">Accessing frontier database...</div>
         <a href="https://ko-fi.com/stickemupgame" class="kofi" target="_blank">Support Stick 'Em Up! (Ko-fi)</a>
     </div>
 
@@ -87,15 +92,15 @@
         const db = getDatabase(app);
 
         const schema = [
-            { id: "tier1", name: "Infrastructure & Hardware", brief: "System maintenance and storage upgrades.", tasks: [
+            { id: "tier1", name: "Infrastructure & Hardware", brief: "Direct system maintenance and upgrades.", tasks: [
                 { id: "t1_sub0", name: "Moving Files (182GB)", brief: "Migrating video captures to main 60TB vault.", specs: "Protocol: Robocopy / 2.5Gbps Link" },
                 { id: "t1_sub1", name: "Deep Cleaning 5950X", brief: "Teardown and thermal repaste of the CPU.", specs: "Tools: 99% IPA / Kryonaut" },
                 { id: "t1_sub2", name: "Mount WD Red Drive Array", brief: "Installing 8TB drives and initializing volume.", specs: "Hardware: WD Red Plus" }
             ]},
-            { id: "tier2", name: "Server & Media Engine", brief: "Automated video conversion and deployment.", tasks: [
+            { id: "tier2", name: "Server & Media Engine", brief: "Automated video conversion and cloud deployment.", tasks: [
                 { id: "t2_sub0", name: "Configure Tdarr H.265 Node", brief: "Enabling hardware encoding on 3080 Ti.", specs: "Hardware: NVENC Node" },
                 { id: "t2_sub1", name: "Verify 2.5Gbps Network Link", brief: "Testing high-throughput internal fabric.", specs: "Protocol: iPerf3 Validation" },
-                { id: "t2_sub2", name: "Initialize Immich Photo Backup", brief: "Establishing a private photos alternative.", specs: "Target: S25 Ultra Sync" }
+                { id: "t2_sub2", name: "Initialize Immich Photo Backup", brief: "Establishing a private Google Photos alternative.", specs: "Target: S25 Ultra Sync" }
             ]},
             { id: "tier3", name: "Professional Frontier", brief: "Professional documentation and job matrix.", tasks: [
                 { id: "t3_sub0", name: "Update klovar.cc Portfolio Layout", brief: "Transitioning dashboard to active portfolio.", specs: "Stack: Firebase / GitHub Pages" },
@@ -112,9 +117,7 @@
             document.getElementById('main-view').style.display = 'none';
             document.getElementById('detail-view').style.display = 'block';
             renderDetailPage(currentId);
-        } else {
-            renderMainList();
-        }
+        } else { renderMainList(); }
 
         function renderMainList() {
             const listDiv = document.getElementById('list');
