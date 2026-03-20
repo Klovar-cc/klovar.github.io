@@ -7,8 +7,7 @@
         :root { --bg: #1a1614; --panel: #2a2420; --border: #4a3f35; --text: #e0d5c1; --blue: #f39c12; --green: #238636; }
         body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; padding: 40px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 650px; }
-        .hero { width: 100%; border: 2px solid var(--blue); border-radius: 12px; padding: 30px 10px; text-align: center; margin-bottom: 30px; background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)); }
-        h1 { color: var(--blue); font-size: 2.2rem; margin: 0; text-transform: uppercase; }
+        h1 { color: var(--blue); text-align: center; border-bottom: 2px solid var(--blue); padding-bottom: 15px; text-transform: uppercase; }
         .tier-label { color: var(--blue); font-size: 0.9rem; margin-top: 30px; display: block; text-transform: uppercase; border-left: 4px solid var(--blue); padding-left: 10px; }
         .item { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; background: rgba(42, 36, 32, 0.4); }
         .check { width: 18px; height: 18px; border: 2px solid var(--border); margin-right: 15px; border-radius: 4px; flex-shrink: 0; }
@@ -16,22 +15,17 @@
         .done span { text-decoration: line-through; }
         .done .check { background: var(--green); border-color: var(--green); position: relative; }
         .done .check::after { content: '✕'; color: black; font-size: 14px; font-weight: bold; position: absolute; left: 2px; top: -2px; }
-        .log-box { margin-top: 30px; background: var(--panel); border: 1px dashed var(--blue); padding: 15px; border-radius: 8px; }
-        #status-log { color: #f1c40f; font-size: 1rem; }
         .footer-links { margin-top: 40px; display: flex; flex-direction: column; gap: 10px; }
         .btn { display: block; text-align: center; padding: 15px; text-decoration: none; border-radius: 8px; border: 2px solid var(--border); font-size: 1rem; font-weight: bold; color: white; text-transform: uppercase; transition: 0.3s; }
-        .share { background: #34495e; }
         .kofi { background: #ff5e5b; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="hero"><h1>Klovar Tasks</h1></div>
+        <h1>[ Klovar Tasks ]</h1>
         <div id="list"></div>
-        <div class="log-box"><div id="status-log">...waiting for telegram...</div></div>
         <div class="footer-links">
-            <a id="share-link" class="btn share" target="_blank" href="#">Broadcast Progress</a>
-            <a href="https://ko-fi.com/klovar" class="btn kofi" target="_blank">Support (Ko-fi)</a>
+            <a href="https://ko-fi.com/klovar" class="btn kofi" target="_blank">Support via Ko-fi</a>
         </div>
     </div>
 
@@ -43,9 +37,9 @@
         const db = getDatabase(app);
 
         const tasks = [
-            { id: "t1_main", tier: "Infrastructure", name: "Hardware & Iron Surgery" },
-            { id: "t2_main", tier: "Media Engine", name: "The Server Vault" },
-            { id: "t5_main", tier: "Professional", name: "The Career Matrix" }
+            { id: "t1_main", tier: "Infrastructure & Hardware", name: "System Maintenance & Upgrades" },
+            { id: "t2_main", tier: "Server & Media Engine", name: "Storage & Transcoding Pipeline" },
+            { id: "t5_main", tier: "Career & Portfolio", name: "Professional Matrix Update" }
         ];
 
         const listDiv = document.getElementById('list');
@@ -63,7 +57,6 @@
                 const row = document.getElementById("row-" + t.id);
                 taskData[t.id] ? row.classList.add('done') : row.classList.remove('done');
             });
-            document.getElementById('status-log').innerText = data.log || "Frontier quiet.";
         });
     </script>
 </body>
