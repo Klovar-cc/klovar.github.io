@@ -2,101 +2,54 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>KLOVAR | MASTER CONTROL</title>
+    <title>klovar.cc | Master Command Center</title>
     <style>
-        body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; padding: 40px; display: flex; justify-content: center; }
-        .panel { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 30px; width: 480px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h1 { color: #58a6ff; font-size: 1.4rem; margin: 0 0 5px 0; text-align: center; letter-spacing: 1px; }
-        .subtitle { color: #8b949e; font-size: 0.8rem; margin-bottom: 25px; text-align: center; display: block; font-family: monospace; }
-        
-        .task-row { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 18px; 
-            margin-bottom: 12px; 
-            background: #21262d; 
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            transition: 0.2s;
-        }
-
-        .task-name { font-weight: 500; font-size: 0.95rem; }
-
-        /* Pro Toggle Switch */
-        .switch { position: relative; display: inline-block; width: 46px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #30363d; transition: .3s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
-        input:checked + .slider { background-color: #238636; }
-        input:checked + .slider:before { transform: translateX(22px); }
-
-        .status-footer { font-size: 0.7rem; margin-top: 25px; color: #7ee787; text-align: center; font-family: monospace; }
+        body { background-color: #0d1117; color: #c9d1d9; font-family: 'Courier New', monospace; padding: 40px; }
+        h1 { color: #58a6ff; border-bottom: 1px solid #30363d; }
+        .project-block { background: #161b22; border: 1px solid #30363d; padding: 20px; margin-bottom: 20px; border-radius: 6px; }
+        .completed { text-decoration: line-through; color: #8b949e; opacity: 0.6; }
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 10px; font-size: 1.1em; display: flex; align-items: center; }
+        .status-tag { color: #ff7b72; font-weight: bold; margin-left: 10px; }
     </style>
 </head>
 <body>
+    <h1>[ klovar.cc // MASTER COMMAND CENTER ]</h1>
+    <p>System Status: <span style="color:#7ee787">LIVE_SYNC_ACTIVE</span></p>
 
-    <div class="panel">
-        <h1>KLOVAR CONTROL UNIT</h1>
-        <span class="subtitle">PROJECT_ID: klovar-cc</span>
-
-        <div id="controls">
-            </div>
-
-        <div class="status-footer">● REALTIME_DB_LINK_ESTABLISHED</div>
+    <div class="project-block">
+        <h2>► Infrastructure & Hardware</h2>
+        <ul id="task-list">
+            <li id="task1"><span>Data Migration: 182GB Photo Robocopy</span></li>
+            <li id="task2"><span>Saturday Surgery: Clean 5950X & Repaste</span></li>
+            <li id="task3"><span>Saturday Surgery: Replace 120mm Fan</span></li>
+            <li id="task4"><span>Array Build: Mount WD Red Drives</span></li>
+            <li id="task5"><span>Cloud Sync: Verify 2000 KB/s limit</span></li>
+        </ul>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Your specific config from image_7e4c82.png
         const firebaseConfig = {
             apiKey: "AIzaSyBQm_CtzkeFCu4prCBOGG3j2ZuSd7IEf_0",
             authDomain: "klovar-cc.firebaseapp.com",
             projectId: "klovar-cc",
             databaseURL: "https://klovar-cc-default-rtdb.firebaseio.com",
-            storageBucket: "klovar-cc.firebasestorage.app"
+            storageBucket: "klovar-cc.firebasestorage.app",
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        
-        const tasks = [
-            { id: 'task1', label: '182GB Photo Migration' },
-            { id: 'task2', label: '5950X Cleaning/Repaste' },
-            { id: 'task3', label: '120mm Fan Replacement' },
-            { id: 'task4', label: 'WD Red Array Mount' },
-            { id: 'task5', label: 'Verify Cloud Sync Limit' }
-        ];
 
-        const container = document.getElementById('controls');
-
-        // Render the switches
-        tasks.forEach(task => {
-            const div = document.createElement('div');
-            div.className = 'task-row';
-            div.innerHTML = `
-                <span class="task-name">${task.label}</span>
-                <label class="switch">
-                    <input type="checkbox" id="check-${task.id}">
-                    <span class="slider"></span>
-                </label>
-            `;
-            container.appendChild(div);
-
-            const input = div.querySelector('input');
-            input.addEventListener('change', (e) => {
-                set(ref(db, 'tasks/' + task.id), e.target.checked);
-            });
-        });
-
-        // Sync state if you open the admin panel on another device
         onValue(ref(db, 'tasks'), (snapshot) => {
             const data = snapshot.val() || {};
-            tasks.forEach(task => {
-                const el = document.getElementById('check-' + task.id);
-                if (el) el.checked = !!data[task.id];
+            Object.keys(data).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    data[id] ? el.classList.add('completed') : el.classList.remove('completed');
+                }
             });
         });
     </script>
