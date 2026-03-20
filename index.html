@@ -85,7 +85,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyBQm_CtzkeFCu4prCBOGG3j2ZuSd7IEf_0", authDomain: "klovar-cc.firebaseapp.com", projectId: "klovar-cc", databaseURL: "https://klovar-cc-default-rtdb.firebaseio.com" };
+        const firebaseConfig = { apiKey: "AIzaSyBQm_CtzkeFCu4prCBOGG3j2Zu শকm_CtzkeFCu4prCBOGG3j2ZuSd7IEf_0", authDomain: "klovar-cc.firebaseapp.com", projectId: "klovar-cc", databaseURL: "https://klovar-cc-default-rtdb.firebaseio.com" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
@@ -103,9 +103,12 @@
         }
         fetchBlueSky();
 
-        // The New Organic Schema
+        // Schema now includes definitions for the Tiers themselves to fix the "undefined" bug
         const schema = [
-            { id: "tier1", name: "The Iron & The Network", tasks: [
+            { id: "tier1", name: "The Iron & The Network", 
+              brief: "Physical hardware interventions and deep networking upgrades.",
+              extended: "This category covers all physical hardware interventions and deep networking upgrades. Everything from ripping open the 5950X workstation for thermal management to racking new drives in the Synology NAS. If it requires a screwdriver or an Ethernet crimper, it lives here.",
+              tasks: [
                 { id: "t1_sub0", name: "The 5950X Saturday Surgery", 
                   brief: "My CPU is running too hot. Stripping the Kraken AIO, cleaning it up, and laying down fresh Kryonaut.", 
                   extended: "Honestly, the Ryzen 9 5950X has been running way too hot lately. Every time I drop into Fortnite or fire up Zenless Zone Zero, the thermals start creeping up and I'm losing frames.\n\nThe exact goal here is a full teardown: I'm pulling the NZXT Kraken X73 AIO cooler off, scrubbing the old thermal paste away with 99% isopropyl alcohol, and laying down a fresh coat of Thermal Grizzly Kryonaut. It's a slightly MacGyvered process, but it's the only way to get my system back to peak performance without thermal throttling.", 
@@ -119,7 +122,10 @@
                   extended: "I've been hoarding local Nvidia Shadowplay captures on my M.2 NVMe drive, and it's eating up 182GB of space that I desperately need for actual games.\n\nThe exact goal is to run a Robocopy script and push all those massive video files across my internal 2.5Gbps network fabric straight into the main NAS archive. Just doing some digital housekeeping so my C: drive can breathe.", 
                   specs: "Protocol: Robocopy / 2.5Gbps Link" }
             ]},
-            { id: "tier2", name: "Automation & Media", tasks: [
+            { id: "tier2", name: "Automation & Media", 
+              brief: "The brains of the operation: transcoding, auto-syncing, and stream prep.",
+              extended: "This is the brain of the operation. Managing the 60TB vault means deploying smart, automated pipelines. Tasks here cover Docker containers, NVENC transcoding via Tdarr, and syncing my Galaxy S25 Ultra using Immich so I never have to pay for cloud storage limits again.",
+              tasks: [
                 { id: "t2_sub0", name: "Tdarr H.265 Crunching", 
                   brief: "Using the 3080 Ti to transcode massive video files down to HEVC.", 
                   extended: "Raw video files are massive, and I'm tired of them taking up terabytes of space.\n\nThe exact goal is to spin up a Tdarr node in Docker and let my RTX 3080 Ti use its NVENC encoder to automatically crush those files down into H.265 (HEVC) format. It’s an ad-hoc server automation that runs in the background while I sleep, saving me space without losing video quality.", 
@@ -133,7 +139,10 @@
                   extended: "The exact goal here is to optimize my desk setup before the weekend hits.\n\nI need to calibrate my Stream Deck XL profiles so I'm not fumbling around while switching scenes or opening apps. Plus, I need to get my Odyssey G5 monitors prepped to track F1 Fantasy and live telemetry—especially keeping an eye on those 2026 wet tyre procedures and Alonso's lap times.", 
                   specs: "Gear: Stream Deck XL / 34\" Odyssey G5" }
             ]},
-            { id: "tier3", name: "The Daily Grind", tasks: [
+            { id: "tier3", name: "The Daily Grind", 
+              brief: "The administrative and career hustle.",
+              extended: "The administrative and career hustle. Updating my klovar.cc portfolio with real homelab metrics, squashing bugs in Stick 'Em Up!, and executing my daily job application matrix to land an IT Support or Junior Sysadmin role in Roswell.",
+              tasks: [
                 { id: "t3_sub0", name: "Resume & Portfolio Injection", 
                   brief: "Adding homelab networking and storage metrics to my CV.", 
                   extended: "Building this website and managing a 61.8TB server isn't just for fun—it's actual IT engineering.\n\nThe exact goal is to inject all these homelab stats, Docker deployments, and 2.5Gbps networking metrics directly into my resume. I'm actively hunting for a Junior Sysadmin or IT Support role around Roswell, and I need my portfolio to reflect the real-world tech I manage every single day.", 
@@ -179,10 +188,15 @@
             const item = allItemsFlat.find(i => i.id === id);
             if (!item) return;
             document.getElementById('detail-title').innerText = item.name;
-            // Uses the long-form organic text
             document.getElementById('detail-desc').innerText = item.extended || item.brief;
             const specsEl = document.getElementById('detail-specs');
-            if (item.specs) { specsEl.innerHTML = `<b>SYSTEM SPECS / TARGET:</b><br>${item.specs}`; }
+            if (item.specs) { 
+                specsEl.innerHTML = `<b>SYSTEM SPECS / TARGET:</b><br>${item.specs}`; 
+            } else {
+                // Hide specs for main categories
+                specsEl.style.display = 'none';
+            }
+            
             const currentIndex = allItemsFlat.findIndex(i => i.id === id);
             const nextItem = allItemsFlat[currentIndex + 1];
             const nextBtn = document.getElementById('next-btn');
@@ -195,10 +209,24 @@
                 const row = document.getElementById(`row-${item.id}`);
                 if (row) { data[item.id] ? row.classList.add('done') : row.classList.remove('done'); }
             });
+            
             if (currentId) {
                 const statusEl = document.getElementById('detail-status');
-                if (data[currentId]) { statusEl.innerText = "● STATUS: SECURED"; statusEl.style.color = "var(--green)"; }
-                else { statusEl.innerText = "● STATUS: IN PROGRESS"; statusEl.style.color = "var(--orange)"; }
+                
+                // Logic check: Is this a task or a main category tier?
+                if (currentId.includes('_sub')) {
+                    if (data[currentId]) { 
+                        statusEl.innerText = "● STATUS: SECURED"; 
+                        statusEl.style.color = "var(--green)"; 
+                    } else { 
+                        statusEl.innerText = "● STATUS: IN PROGRESS"; 
+                        statusEl.style.color = "var(--orange)"; 
+                    }
+                } else {
+                    // It's a Tier, not a task. Fix the status label.
+                    statusEl.innerText = "● CATEGORY OVERVIEW"; 
+                    statusEl.style.color = "var(--bsky)"; 
+                }
             }
         });
     </script>
