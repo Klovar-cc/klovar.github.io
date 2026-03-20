@@ -22,21 +22,19 @@
             padding: 20px;
             margin-bottom: 20px;
         }
-        ul { list-style-type: square; }
-        li { margin-bottom: 8px; }
-        .completed { text-decoration: line-through; color: #8b949e; }
+        ul { list-style-type: none; padding-left: 0; }
+        li { margin-bottom: 10px; display: flex; align-items: center; }
+        
+        /* Checkbox Styling */
+        input[type="checkbox"] {
+            margin-right: 12px;
+            transform: scale(1.3);
+            cursor: pointer;
+            accent-color: #238636;
+        }
+        
+        .completed span { text-decoration: line-through; color: #8b949e; }
         .highlight { color: #ff7b72; font-weight: bold; }
-        .progress-bar {
-            width: 100%;
-            background-color: #21262d;
-            border-radius: 4px;
-            margin-top: 10px;
-        }
-        .progress {
-            height: 10px;
-            background-color: #238636;
-            border-radius: 4px;
-        }
     </style>
 </head>
 <body>
@@ -47,55 +45,86 @@
     <div class="project-block">
         <h2>► Tier 1: Infrastructure & Hardware</h2>
         <p>Status: <span class="highlight">ACTIVE</span> | Priority: Maximum</p>
-        <div class="progress-bar"><div class="progress" style="width: 25%;"></div></div>
-        <ul>
-            <li class="completed">Data Migration: 182GB Photo Robocopy to C:\GooglePhotoSync</li>
-            <li>Saturday Surgery: Clean 5950X & Repaste (Kryonaut/MX-6)</li>
-            <li>Saturday Surgery: Replace 120mm Corsair Fan</li>
-            <li>Array Build: Mount WD Red Drives with vibration foam</li>
-            <li>Cloud Sync: Verify Google Drive 2000 KB/s limit</li>
+        <ul class="task-list">
+            <li><span>Data Migration: 182GB Photo Robocopy to C:\GooglePhotoSync</span></li>
+            <li><span>Saturday Surgery: Clean 5950X & Repaste (Kryonaut/MX-6)</span></li>
+            <li><span>Saturday Surgery: Replace 120mm Corsair Fan</span></li>
+            <li><span>Array Build: Mount WD Red Drives with vibration foam</span></li>
+            <li><span>Cloud Sync: Verify Google Drive 2000 KB/s limit</span></li>
         </ul>
     </div>
 
     <div class="project-block">
         <h2>► Tier 2: The Server Engine</h2>
         <p>Status: PENDING HARDWARE CLEARANCE</p>
-        <ul>
-            <li>Tdarr Node: Configure RTX 3080 Ti for NVENC H.265 Transcoding</li>
-            <li>Plex: Verify Hardware Transcoding for VR 3D Movies</li>
-            <li>Immich Vault: Route Galaxy S25 Ultra backups via Wi-Fi only</li>
+        <ul class="task-list">
+            <li><span>Tdarr Node: Configure RTX 3080 Ti for NVENC H.265 Transcoding</span></li>
+            <li><span>Plex: Verify Hardware Transcoding for VR 3D Movies</span></li>
+            <li><span>Immich Vault: Route Galaxy S25 Ultra backups via Wi-Fi only</span></li>
         </ul>
     </div>
 
     <div class="project-block">
         <h2>► Tier 3: The Command Center</h2>
         <p>Status: IN PROGRESS</p>
-        <ul>
-            <li>DisplayFusion: Lock MusicBee coordinates for vertical monitor</li>
-            <li>DaVinci Resolve: Lock S25 Ultra Vertical & 1440p presets</li>
-            <li>OBS Studio: Align Twitch 1080p / YouTube 1440p Canvases</li>
-            <li>Stream Deck XL: Map C6 (Immich Drop) and C8 (Resolve R1) macros</li>
+        <ul class="task-list">
+            <li><span>DisplayFusion: Lock MusicBee coordinates for vertical monitor</span></li>
+            <li><span>DaVinci Resolve: Lock S25 Ultra Vertical & 1440p presets</span></li>
+            <li><span>OBS Studio: Align Twitch 1080p / YouTube 1440p Canvases</span></li>
+            <li><span>Stream Deck XL: Map C6 (Immich Drop) and C8 (Resolve R1) macros</span></li>
         </ul>
     </div>
 
     <div class="project-block">
         <h2>► Tier 4: Creative Pipelines</h2>
         <p>Status: ONGOING</p>
-        <ul>
-            <li>Stick 'Em Up!: Finalize Game Design Document (Core Loop)</li>
-            <li>Stick 'Em Up!: Build whitebox prototype controller</li>
-            <li>Story: Update Master Bible and establish 15-min daily quota</li>
+        <ul class="task-list">
+            <li><span>Stick 'Em Up!: Finalize Game Design Document (Core Loop)</span></li>
+            <li><span>Stick 'Em Up!: Build whitebox prototype controller</span></li>
+            <li><span>Story: Update Master Bible and establish 15-min daily quota</span></li>
         </ul>
     </div>
 
     <div class="project-block">
         <h2>► Tier 5: Career Matrix</h2>
         <p>Status: DAILY PROTOCOL</p>
-        <ul>
-            <li>Resume: Inject 60TB NAS Administration & Data Migration metrics</li>
-            <li>Job Hunt: Run 30-minute daily timer for applications</li>
+        <ul class="task-list">
+            <li><span>Resume: Inject 60TB NAS Administration & Data Migration metrics</span></li>
+            <li><span>Job Hunt: Run 30-minute daily timer for applications</span></li>
         </ul>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const listItems = document.querySelectorAll('.task-list li');
+            
+            listItems.forEach((li) => {
+                const taskText = li.querySelector('span').innerText.trim();
+                const taskKey = 'klovar-task-' + btoa(taskText).substring(0, 20); // Create unique ID per task
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                
+                // Check memory
+                if (localStorage.getItem(taskKey) === 'true') {
+                    checkbox.checked = true;
+                    li.classList.add('completed');
+                }
+                
+                li.insertBefore(checkbox, li.firstChild);
+                
+                // Listen for clicks
+                checkbox.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        li.classList.add('completed');
+                        localStorage.setItem(taskKey, 'true');
+                    } else {
+                        li.classList.remove('completed');
+                        localStorage.setItem(taskKey, 'false');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
