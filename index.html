@@ -2,35 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>klovar.cc | Operations</title>
     <style>
         :root { --bg: #1a1614; --panel: #2a2420; --border: #4a3f35; --text: #e0d5c1; --orange: #f39c12; --green: #238636; }
         body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 700px; display: block; position: relative;}
+        .container { width: 100%; max-width: 700px; position: relative; }
+        .hero { border: 2px solid var(--orange); border-radius: 12px; padding: 30px; text-align: center; margin-bottom: 30px; background: rgba(0,0,0,0.4); }
+        h1 { color: var(--orange); font-size: 2.2rem; margin: 0; text-transform: uppercase; }
+        .tier-label { color: var(--orange); font-size: 0.9rem; margin-top: 30px; display: block; text-transform: uppercase; border-left: 4px solid var(--orange); padding-left: 12px; cursor: pointer; position: relative; }
+        .item { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; background: rgba(42, 36, 32, 0.4); cursor: pointer; position: relative; transition: 0.2s; }
+        .item:hover { background: rgba(243, 156, 18, 0.1); }
         
-        /* Main Page Styling */
-        .hero { border: 2px solid var(--orange); border-radius: 12px; padding: 30px; text-align: center; margin-bottom: 30px; background: rgba(0,0,0,0.4); cursor: pointer; }
-        .tier-label { 
-            color: var(--orange); font-size: 0.9rem; margin-top: 30px; display: block; 
-            text-transform: uppercase; border-left: 4px solid var(--orange); padding-left: 12px; 
-            cursor: pointer; position: relative; transition: 0.2s;
-        }
-        .tier-label:hover { background: rgba(243, 156, 18, 0.1); }
-        
-        .item { 
-            padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; 
-            background: rgba(42, 36, 32, 0.4); cursor: pointer; position: relative; transition: 0.2s;
-        }
-        .item:hover { background: rgba(243, 156, 18, 0.1); border-left: 2px solid var(--orange); }
-        
-        /* Hover Briefing - Positioned to the Right of the text */
-        .briefing { 
-            display: none; position: absolute; left: 102%; top: 0; width: 280px; 
-            background: var(--panel); border: 1px solid var(--orange); padding: 15px; 
-            z-index: 100; border-radius: 8px; font-size: 0.85rem; pointer-events: none;
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.6); line-height: 1.4; color: #f1c40f;
-        }
+        /* Hover Briefing - Positioned Right */
+        .briefing { display: none; position: absolute; left: 102%; top: 0; width: 280px; background: var(--panel); border: 1px solid var(--orange); padding: 15px; z-index: 100; border-radius: 8px; font-size: 0.85rem; pointer-events: none; box-shadow: 5px 5px 15px rgba(0,0,0,0.6); line-height: 1.4; color: #f1c40f; }
         .item:hover .briefing, .tier-label:hover .briefing { display: block; }
 
         .check { width: 18px; height: 18px; border: 1px solid var(--border); margin-right: 15px; border-radius: 3px; flex-shrink: 0; }
@@ -39,40 +23,34 @@
         .done .check { background: var(--green); border-color: var(--green); position: relative; }
         .done .check::after { content: '✕'; color: black; font-size: 14px; position: absolute; left: 2px; top: -2px; }
 
-        /* Detail Page Styling */
-        #detail-view { display: none; width: 100%; max-width: 700px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 40px; box-sizing: border-box; }
+        /* Detail View (Hidden until clicked) */
+        #detail-view { display: none; width: 100%; max-width: 700px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 40px; }
         .nav-row { display: flex; justify-content: space-between; margin-top: 40px; }
-        .nav-btn { background: #1f2937; border: 1px solid var(--border); color: var(--text); padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 0.8rem; font-weight: bold;}
-        .nav-btn:hover { background: var(--orange); color: black; }
-        .detail-status { font-weight: bold; margin-bottom: 15px; display: block; font-size: 1.1rem;}
+        .nav-btn { background: #1f2937; border: 1px solid var(--border); color: var(--text); padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
         
-        /* Ko-fi Footer */
-        .footer-wrap { width: 100%; max-width: 700px; display: none; }
-        .kofi { display: block; text-align: center; margin-top: 50px; background: #ff5e5b; color: white; padding: 16px; text-decoration: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; border: 1px solid #4a3f35; width: 100%; box-sizing: border-box;}
+        /* Ko-fi Rescued & Fixed */
+        .kofi { display: block; text-align: center; margin-top: 50px; background: #ff5e5b; color: white; padding: 16px; text-decoration: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; border: 1px solid #4a3f35; width: 100%; box-sizing: border-box; transition: 0.2s; }
+        .kofi:hover { filter: brightness(1.1); transform: translateY(-2px); }
     </style>
 </head>
 <body>
 
     <div id="main-view" class="container">
         <div class="hero"><h1>KLOVAR OPERATIONS</h1></div>
-        <div id="list"></div>
+        <div id="list">Synchronizing stream...</div>
+        <a href="https://ko-fi.com/stickemupgame" class="kofi" target="_blank">Support Stick 'Em Up! (Ko-fi)</a>
     </div>
 
-    <div id="detail-view">
+    <div id="detail-view" class="container">
         <h2 id="detail-title" style="color:var(--orange); text-transform: uppercase;"></h2>
-        <span id="detail-status" class="detail-status"></span>
+        <span id="detail-status" style="font-weight:bold; display:block; margin-bottom:15px;"></span>
         <p id="detail-desc" style="line-height:1.6; color:#bdc3c7; font-size:1.1rem;"></p>
         <hr style="border:0; border-top:1px solid var(--border); margin:30px 0;">
-        <div id="detail-specs" style="font-size:0.95rem; font-family:sans-serif; color:#e0d5c1; line-height:1.5;"></div>
-        
+        <div id="detail-specs" style="font-size:0.95rem; font-family:sans-serif; color:#e0d5c1;"></div>
         <div class="nav-row">
             <a href="?" class="nav-btn">← BACK TO COMMAND</a>
             <a href="#" id="next-btn" class="nav-btn">NEXT MISSION →</a>
         </div>
-    </div>
-
-    <div id="main-footer" class="footer-wrap">
-        <a href="https://ko-fi.com/klovar" class="kofi" target="_blank">Support the Outlaw (Ko-fi)</a>
     </div>
 
     <script type="module">
@@ -83,20 +61,20 @@
         const db = getDatabase(app);
 
         const schema = [
-            { id: "tier1", name: "Hardware & Iron Surgery", brief: "System maintenance and upgrades on the Ryzen 9 workstation.", desc: "Full tactical refresh of the primary 5950X machine. Addressing thermal creep, expanding local high-speed storage, and ensuring physical integrity for competitive gaming/encoding.", tasks: [
-                { id: "t1_sub0", name: "Moving the Stash (182GB)", brief: "Migrating large-scale video captures to the main 60TB vault.", desc: "Moving 182GB of high-fidelity gameplay captures and personal media from a temporary NVMe drive to the secure, redundant 61.8 TB RAID array.", specs: "Protocol: CLI Robocopy over 2.5Gbps internal link." },
-                { id: "t1_sub1", name: "The Saturday Surgery: 5950X Refresh", brief: "Teardown, cleaning, and thermal repaste of the main CPU.", desc: "System shutdown and full removal of the NZXT Kraken X73 AIO cooler. Deep cleaning the socket area and heat spreader. Applying premium interface material to resolve recent thermal instability.", specs: "Tools: Isopropyl (99%), Thermal Grizzly Kryonaut." },
-                { id: "t1_sub2", name: "Expanding the Vault: WD Red Array", brief: "Mounting the 8TB WD Red Pro drives and initializing volume.", desc: "Physically installing the 8TB WD Red Plus drives into the primary NAS chassis. Configuring vibration-dampening mounting system and expanding the logical volume for Tdarr/Immich ingest.", specs: "Hardware: WD Red Plus (CMR), S.M.A.R.T. validation." }
+            { id: "tier1", name: "Infrastructure & Hardware", brief: "Direct system maintenance and storage upgrades.", desc: "Full tactical refresh of the primary 5950X machine. Addressing thermal creep, expanding local high-speed storage, and ensuring physical integrity for competitive gaming/encoding.", tasks: [
+                { id: "t1_sub0", name: "Moving Files (182GB)", brief: "Migrating video captures to main 60TB vault.", desc: "Moving 182GB of high-fidelity gameplay captures and personal media from a temporary NVMe drive to the secure, redundant 61.8 TB RAID array.", specs: "Protocol: CLI Robocopy over 2.5Gbps internal link." },
+                { id: "t1_sub1", name: "Deep Cleaning 5950X", brief: "Teardown and thermal repaste of the primary CPU.", desc: "System shutdown and full removal of the NZXT Kraken X73 AIO cooler. Deep cleaning the socket area and heat spreader. Applying premium interface material to resolve recent thermal instability.", specs: "Tools: Isopropyl (99%), Thermal Grizzly Kryonaut." },
+                { id: "t1_sub2", name: "Mount WD Red Drive Array", brief: "Installing 8TB drives and initializing volume.", desc: "Physically installing the 8TB WD Red Plus drives into the primary NAS chassis. Configuring vibration-dampening mounting system and expanding the logical volume for Tdarr/Immich ingest.", specs: "Hardware: WD Red Plus (CMR), S.M.A.R.T. validation." }
             ]},
-            { id: "tier2", name: "Media & Server Engine", brief: "Deploying automated pipelines for video conversion and cloud backup.", desc: "Initializing the 'Server Vault' logic: Setting up automated H.265 media compression, establishing a high-throughput network link, and deploying a private photos backup solution.", tasks: [
-                { id: "t2_sub0", name: "Video Optimization: Tdarr Node", brief: "Enabling hardware H.265 encoding on the RTX 3080 Ti.", desc: "Deploying a dedicated Tdarr transcoding node. Utilizing the RTX 3080 Ti's NVENC core to automatically compress raw DaVinci masters into space-efficient HEVC files.", specs: "Node: SERVER1 [Docker] / HEVC [NVENC] codec." },
-                { id: "t2_sub1", name: "Validating 2.5Gbps Link Speed", brief: "Testing the high-throughput network fabric.", desc: "Confirming full 2.5Gbps bidirectional throughput across the internal network fabric (Workstation to Server). Required for immediate offload of large-scale OBS recordings.", specs: "Protocol: iPerf3 / Cat6a termination / Realtek RTL8125 controller." },
-                { id: "t2_sub2", name: "Private Photo Backup Deployment", brief: "Establishing a high-capacity Google Photos alternative.", desc: "Setting up a private, high-capacity Google Photos alternative for the S25 Ultra.", specs: "Sync: 512GB local storage to 60TB NAS vault via Wi-Fi 6." }
+            { id: "tier2", name: "Server & Media Engine", brief: "Automated video conversion and cloud backup deployment.", desc: "Initializing the 'Server Vault' logic: Setting up automated H.265 media compression, establishing a high-throughput network link, and deploying a private photos backup solution.", tasks: [
+                { id: "t2_sub0", name: "Configure Tdarr H.265 Node", brief: "Enabling hardware encoding on RTX 3080 Ti.", desc: "Deploying a dedicated Tdarr transcoding node. Utilizing the RTX 3080 Ti's NVENC core to automatically compress raw DaVinci masters into space-efficient HEVC files.", specs: "Node: SERVER1 [Docker] / HEVC [NVENC] codec." },
+                { id: "t2_sub1", name: "Verify 2.5Gbps Network Link", brief: "Testing high-throughput internal fabric.", desc: "Confirming full 2.5Gbps bidirectional throughput across the internal network fabric (Workstation to Server). Required for immediate offload of large-scale OBS recordings.", specs: "Protocol: iPerf3 / Cat6a termination / Realtek RTL8125 controller." },
+                { id: "t2_sub2", name: "Initialize Immich Photo Backup", brief: "Setting up private Google Photos alternative.", desc: "Setting up a private, high-capacity Google Photos alternative for the S25 Ultra.", specs: "Sync: 512GB local storage to 60TB NAS vault via Wi-Fi 6." }
             ]},
-            { id: "tier3", name: "Professional Frontier", brief: "Updating professional documentation and executing the job matrix.", desc: "Strategic career maneuvering: Update the klovar.cc portfolio with direct metrics from this homelab project, injecting those stats into professional resumes, and executing the daily application matrix.", tasks: [
-                { id: "t3_sub0", name: "Portfolio: klovar.cc Layout Fix", brief: "Moving this site from a placeholder to an active portfolio.", desc: "Transitioning this operations dashboard from a static list to a fully interactive technical portfolio. Showcasing proficiency in real-time data sync, DNS management, and technical documentation.", specs: "Stack: Firebase Realtime DB, GitHub Pages, Custom DNS." },
-                { id: "t3_sub1", name: "Resume: Inject Home Lab Metrics", brief: "Optimizing career documents with homelab specs.", desc: "Revising professional resumes and LinkedIn profiles to highlight senior-level IT and Systems Admin skills acquired from this project. Quantifying accomplishments.", specs: "Metrics: 61.8 TB Storage Management, 2.5Gbps Networking fabric, Docker container orchestration." },
-                { id: "t3_sub2", name: "Daily Career Matrix Execution", brief: "Consistent job searching and applications.", desc: "Executing the daily application matrix: Targeted searching and logging of 3 relevant Junior Systems Administrator or Technical Writer roles.", specs: "Log: Job Hunt Matrix (Career Matrix folder)." }
+            { id: "tier3", name: "Career & Portfolio", brief: "Professional documentation and job applications.", desc: "Strategic career maneuvering: Update the klovar.cc portfolio with direct metrics from this homelab project, injecting those stats into professional resumes, and executing the daily application matrix.", tasks: [
+                { id: "t3_sub0", name: "Update klovar.cc Portfolio Layout", brief: "Transitioning dashboard to active portfolio.", desc: "Transitioning this operations dashboard from a static list to a fully interactive technical portfolio. Showcasing proficiency in real-time data sync, DNS management, and technical documentation.", specs: "Stack: Firebase Realtime DB, GitHub Pages, Custom DNS." },
+                { id: "t3_sub1", name: "Inject Home Lab Metrics into Resume", brief: "Optimizing career documents with project specs.", desc: "Revising professional resumes and LinkedIn profiles to highlight senior-level IT and Systems Admin skills acquired from this project. Quantifying accomplishments.", specs: "Metrics: 61.8 TB Storage Management, 2.5Gbps Networking fabric, Docker container orchestration." },
+                { id: "t3_sub2", name: "Log 3 Daily Job Applications", brief: "Consistent job searching and logging.", desc: "Executing the daily application matrix: Targeted searching and logging of 3 relevant Junior Systems Administrator or Technical Writer roles.", specs: "Log: Job Hunt Matrix (Career Matrix folder)." }
             ] }
         ];
 
@@ -106,16 +84,15 @@
 
         if (currentId) {
             document.getElementById('main-view').style.display = 'none';
-            document.getElementById('main-footer').style.display = 'none';
             document.getElementById('detail-view').style.display = 'block';
             renderDetailPage(currentId);
         } else {
-            document.getElementById('main-footer').style.display = 'block';
             renderMainList();
         }
 
         function renderMainList() {
             const listDiv = document.getElementById('list');
+            listDiv.innerHTML = "";
             schema.forEach(section => {
                 const label = document.createElement('span'); 
                 label.className = 'tier-label'; 
@@ -128,7 +105,7 @@
                     const div = document.createElement('div');
                     div.id = `row-${task.id}`;
                     div.className = "item";
-                    div.onclick = (e) => { window.location.href = `?deepdive=${task.id}`; };
+                    div.onclick = () => window.location.href = `?deepdive=${task.id}`;
                     div.innerHTML = `
                         <div class="check"></div>
                         <span>${task.name}</span>
@@ -141,14 +118,11 @@
 
         function renderDetailPage(id) {
             const item = allItemsFlat.find(i => i.id === id);
-            if (!item) { window.location.href = "?"; return; }
+            if (!item) return;
             document.getElementById('detail-title').innerText = item.name;
             document.getElementById('detail-desc').innerText = item.desc;
             const specsEl = document.getElementById('detail-specs');
-            if (item.specs) {
-                specsEl.style.display = 'block';
-                specsEl.innerHTML = `<b>SYSTEM REQUIREMENTS:</b><br>${item.specs}`;
-            } else { specsEl.style.display = 'none'; }
+            if (item.specs) { specsEl.innerHTML = `<b>SYSTEM REQUIREMENTS:</b><br>${item.specs}`; }
             
             const currentIndex = allItemsFlat.findIndex(i => i.id === id);
             const nextItem = allItemsFlat[currentIndex + 1];
@@ -156,20 +130,16 @@
             if (nextItem) { nextBtn.href = `?deepdive=${nextItem.id}`; } else { nextBtn.style.display = 'none'; }
         }
 
-        onValue(ref(db), (snap) => {
+        onValue(ref(db, 'subtasks'), (snap) => {
             const data = snap.val() || {};
-            const subs = data.subtasks || {};
             allItemsFlat.forEach(item => {
                 const row = document.getElementById(`row-${item.id}`);
-                if (row) { subs[item.id] ? row.classList.add('done') : row.classList.remove('done'); }
+                if (row) { data[item.id] ? row.classList.add('done') : row.classList.remove('done'); }
             });
             if (currentId) {
                 const statusEl = document.getElementById('detail-status');
-                const isTask = currentId.includes('_sub');
-                if (isTask) {
-                    if (subs[currentId]) { statusEl.innerText = "● STATUS: COMPLETED"; statusEl.style.color = "var(--green)"; }
-                    else { statusEl.innerText = "● STATUS: ACTIVE MISSION"; statusEl.style.color = "var(--orange)"; }
-                } else { statusEl.innerText = "● OPERATIONAL DIRECTIVE"; statusEl.style.color = "var(--orange)"; }
+                if (data[currentId]) { statusEl.innerText = "● STATUS: COMPLETED"; statusEl.style.color = "var(--green)"; }
+                else { statusEl.innerText = "● STATUS: ACTIVE MISSION"; statusEl.style.color = "var(--orange)"; }
             }
         });
     </script>
