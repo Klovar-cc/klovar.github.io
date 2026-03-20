@@ -2,30 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>klovar.cc | Master Command Center</title>
+    <title>klovar.cc | STATUS</title>
     <style>
-        body { background-color: #0d1117; color: #c9d1d9; font-family: 'Courier New', monospace; padding: 40px; }
-        h1 { color: #58a6ff; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
-        .project-block { background: #161b22; border: 1px solid #30363d; padding: 20px; margin-bottom: 20px; border-radius: 6px; }
-        .completed { text-decoration: line-through; color: #8b949e; opacity: 0.6; transition: 0.3s; }
-        ul { list-style: none; padding: 0; }
-        li { margin-bottom: 12px; font-size: 1.1em; display: flex; align-items: center; }
-        .status-tag { color: #7ee787; font-weight: bold; margin-bottom: 20px; display: block; }
+        :root { --bg: #0d1117; --panel: #161b22; --border: #30363d; --text: #c9d1d9; --blue: #58a6ff; }
+        body { background: var(--bg); color: var(--text); font-family: monospace; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 600px; }
+        .item { padding: 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; }
+        .check { width: 15px; height: 15px; border: 1px solid var(--border); margin-right: 15px; }
+        .done { text-decoration: line-through; color: #8b949e; }
+        .done .check { background: #238636; border-color: #238636; }
+        .share { margin-top: 30px; background: #1f2937; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
-    <h1>[ klovar.cc // MASTER COMMAND CENTER ]</h1>
-    <span class="status-tag">● LIVE_SYNC_ENABLED</span>
-
-    <div class="project-block">
-        <h2>► Infrastructure & Hardware</h2>
-        <ul id="task-list">
-            <li id="task1"><span>Data Migration: 182GB Photo Robocopy</span></li>
-            <li id="task2"><span>Saturday Surgery: Clean 5950X & Repaste</span></li>
-            <li id="task3"><span>Saturday Surgery: Replace 120mm Fan</span></li>
-            <li id="task4"><span>Array Build: Mount WD Red Drives</span></li>
-            <li id="task5"><span>Cloud Sync: Verify 2000 KB/s limit</span></li>
-        </ul>
+    <div class="container">
+        <h1>[ KLOVAR OPERATIONS ]</h1>
+        <div id="list"></div>
+        <a id="share-link" class="share" target="_blank" href="#">SHARE PROGRESS TO BLUESKY</a>
     </div>
 
     <script type="module">
@@ -36,20 +29,40 @@
             apiKey: "AIzaSyBQm_CtzkeFCu4prCBOGG3j2ZuSd7IEf_0",
             authDomain: "klovar-cc.firebaseapp.com",
             projectId: "klovar-cc",
-            databaseURL: "https://klovar-cc-default-rtdb.firebaseio.com"
+            databaseURL: "https://klovar-cc-default-rtdb.firebaseio.com",
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        onValue(ref(db, 'tasks'), (snapshot) => {
-            const data = snapshot.val() || {};
-            Object.keys(data).forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    data[id] ? el.classList.add('completed') : el.classList.remove('completed');
-                }
+        const tasks = [
+            { id: "t1_1", name: "182GB Photo Migration" },
+            { id: "t1_2", name: "5950X Repaste Surgery" },
+            { id: "t2_1", name: "NVENC H.265 Tdarr Node" },
+            { id: "t4_1", name: "'Stick 'Em Up!' Prototype" },
+            { id: "t5_1", name: "Career Matrix Resume Update" }
+        ];
+
+        const listDiv = document.getElementById('list');
+        tasks.forEach(t => {
+            const div = document.createElement('div');
+            div.id = "row-" + t.id;
+            div.className = "item";
+            div.innerHTML = `<div class="check"></div><span>${t.name}</span>`;
+            listDiv.appendChild(div);
+        });
+
+        onValue(ref(db, 'tasks'), (snap) => {
+            const data = snap.val() || {};
+            let count = 0;
+            tasks.forEach(t => {
+                const row = document.getElementById("row-" + t.id);
+                if (data[t.id]) { row.classList.add('done'); count++; }
+                else { row.classList.remove('done'); }
             });
+
+            const text = encodeURIComponent(`Klovar Operations Update: [${count}/${tasks.length}] missions complete. Status at: https://klovar.cc`);
+            document.getElementById('share-link').href = `https://bsky.app/intent/compose?text=${text}`;
         });
     </script>
 </body>
