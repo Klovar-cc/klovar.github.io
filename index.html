@@ -47,7 +47,9 @@
         #detail-view { display: none; width: 100%; max-width: 700px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 40px; box-sizing: border-box; }
         .nav-row { display: flex; justify-content: space-between; margin-top: 40px; }
         .nav-btn { background: #1f2937; border: 1px solid var(--border); color: var(--text); padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
-        .kofi { display: block; text-align: center; margin-top: 50px; background: #ff5e5b; color: white; padding: 16px; text-decoration: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; width: 100%; box-sizing: border-box; }
+        .nav-btn:hover { background: var(--orange); color: #000; }
+        .kofi { display: block; text-align: center; margin-top: 50px; background: #ff5e5b; color: white; padding: 16px; text-decoration: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; width: 100%; box-sizing: border-box; transition: 0.2s; }
+        .kofi:hover { filter: brightness(1.1); transform: translateY(-2px); }
     </style>
 </head>
 <body>
@@ -61,34 +63,33 @@
                     <div class="bsky-btn">Follow</div>
                     <span class="bsky-name" id="bsky-name">Klovar</span>
                     <span class="bsky-handle">@klovar.cc</span>
-                    <p id="bsky-bio">Accessing BlueSky data...</p>
+                    <p id="bsky-bio">Connecting to the frontier...</p>
                     <div class="bsky-stats" id="bsky-stats">-- Followers</div>
                 </div>
             </div>
         </div>
-        <div id="list">Synchronizing with frontier database...</div>
+        <div id="list">Loading data stream...</div>
         <a href="https://ko-fi.com/stickemupgame" class="kofi" target="_blank">Support Stick 'Em Up! (Ko-fi)</a>
     </div>
 
     <div id="detail-view" class="container">
         <h2 id="detail-title" style="color:var(--orange); text-transform: uppercase;"></h2>
         <span id="detail-status" style="font-weight:bold; display:block; margin-bottom:15px;"></span>
-        <p id="detail-desc" style="line-height:1.6; color:#bdc3c7; font-size:1.1rem;"></p>
+        <p id="detail-desc" style="line-height:1.7; color:#bdc3c7; font-size:1.05rem; white-space: pre-wrap;"></p>
         <hr style="border:0; border-top:1px solid var(--border); margin:30px 0;">
         <div id="detail-specs" style="font-size:0.95rem; font-family:sans-serif; color:#e0d5c1;"></div>
-        <div class="nav-row"><a href="?" class="nav-btn">← COMMAND</a><a href="#" id="next-btn" class="nav-btn">NEXT →</a></div>
+        <div class="nav-row"><a href="?" class="nav-btn">← BACK OUT</a><a href="#" id="next-btn" class="nav-btn">NEXT ITEM →</a></div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Firebase Setup
         const firebaseConfig = { apiKey: "AIzaSyBQm_CtzkeFCu4prCBOGG3j2ZuSd7IEf_0", authDomain: "klovar-cc.firebaseapp.com", projectId: "klovar-cc", databaseURL: "https://klovar-cc-default-rtdb.firebaseio.com" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // BlueSky Fetch using your DID
+        // Fetch Live BlueSky Data via DID
         async function fetchBlueSky() {
             try {
                 const res = await fetch(`https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor=did:plc:ff4cxlsundouzns5feve35qs`);
@@ -102,21 +103,49 @@
         }
         fetchBlueSky();
 
+        // The New Organic Schema
         const schema = [
-            { id: "tier1", name: "Infrastructure & Hardware", tasks: [
-                { id: "t1_sub0", name: "Moving Files (182GB)", brief: "Migrating video captures to main 60TB vault.", specs: "Protocol: Robocopy / 2.5Gbps Link" },
-                { id: "t1_sub1", name: "Deep Cleaning 5950X", brief: "Teardown and thermal repaste of the CPU.", specs: "Tools: 99% IPA / Kryonaut" },
-                { id: "t1_sub2", name: "Mount WD Red Drive Array", brief: "Installing 8TB drives and initializing volume.", specs: "Hardware: WD Red Plus" }
+            { id: "tier1", name: "The Iron & The Network", tasks: [
+                { id: "t1_sub0", name: "The 5950X Saturday Surgery", 
+                  brief: "My CPU is running too hot. Stripping the Kraken AIO, cleaning it up, and laying down fresh Kryonaut.", 
+                  extended: "Honestly, the Ryzen 9 5950X has been running way too hot lately. Every time I drop into Fortnite or fire up Zenless Zone Zero, the thermals start creeping up and I'm losing frames.\n\nThe exact goal here is a full teardown: I'm pulling the NZXT Kraken X73 AIO cooler off, scrubbing the old thermal paste away with 99% isopropyl alcohol, and laying down a fresh coat of Thermal Grizzly Kryonaut. It's a slightly MacGyvered process, but it's the only way to get my system back to peak performance without thermal throttling.", 
+                  specs: "Gear: 99% IPA, Kryonaut, Patience" },
+                { id: "t1_sub1", name: "Expanding the 61.8TB Vault", 
+                  brief: "Racking new 8TB WD Reds into the NAS for more Plex storage.", 
+                  extended: "My Plex server is absolutely ravenous. I'm currently sitting on over 49 terabytes of TV shows alone (we're talking 17,000+ episodes), plus all my movies and 4K KATSEYE performance rips.\n\nThe exact goal is to physically rack a couple of new 8TB WD Red Plus drives into my Synology DS1019+ NAS. Once they're in, I'll expand the SHR volume to give the system some breathing room before I literally run out of bytes.", 
+                  specs: "Hardware: WD Red Plus 8TB, DS1019+" },
+                { id: "t1_sub2", name: "The 182GB Nvidia Offload", 
+                  brief: "Pushing massive local Shadowplay captures over the 2.5Gbps link.", 
+                  extended: "I've been hoarding local Nvidia Shadowplay captures on my M.2 NVMe drive, and it's eating up 182GB of space that I desperately need for actual games.\n\nThe exact goal is to run a Robocopy script and push all those massive video files across my internal 2.5Gbps network fabric straight into the main NAS archive. Just doing some digital housekeeping so my C: drive can breathe.", 
+                  specs: "Protocol: Robocopy / 2.5Gbps Link" }
             ]},
-            { id: "tier2", name: "Server & Media Engine", tasks: [
-                { id: "t2_sub0", name: "Configure Tdarr H.265 Node", brief: "Enabling hardware encoding on 3080 Ti.", specs: "Hardware: NVENC Node" },
-                { id: "t2_sub1", name: "Verify 2.5Gbps Network Link", brief: "Testing high-throughput internal fabric.", specs: "Protocol: iPerf3 Validation" },
-                { id: "t2_sub2", name: "Initialize Immich Photo Backup", brief: "Establishing a private photos alternative.", specs: "Target: S25 Ultra Sync" }
+            { id: "tier2", name: "Automation & Media", tasks: [
+                { id: "t2_sub0", name: "Tdarr H.265 Crunching", 
+                  brief: "Using the 3080 Ti to transcode massive video files down to HEVC.", 
+                  extended: "Raw video files are massive, and I'm tired of them taking up terabytes of space.\n\nThe exact goal is to spin up a Tdarr node in Docker and let my RTX 3080 Ti use its NVENC encoder to automatically crush those files down into H.265 (HEVC) format. It’s an ad-hoc server automation that runs in the background while I sleep, saving me space without losing video quality.", 
+                  specs: "Node: SERVER1 / NVENC H.265" },
+                { id: "t2_sub1", name: "Immich S25 Ultra Sync", 
+                  brief: "Setting up auto-sync to ditch cloud storage limits forever.", 
+                  extended: "I refuse to pay for cloud storage limits anymore.\n\nThe exact goal is to deploy Immich on the server and set up my Galaxy S25 Ultra to automatically back up every photo and video I take directly to my own NAS over Wi-Fi 6. It's basically a self-hosted, private version of Google Photos that taps straight into my 60TB vault.", 
+                  specs: "Target: Local Immich Instance" },
+                { id: "t2_sub2", name: "Stream Deck & F1 Weekend Prep", 
+                  brief: "Optimizing the Razer/Elgato setup and tracking F1 telemetry.", 
+                  extended: "The exact goal here is to optimize my desk setup before the weekend hits.\n\nI need to calibrate my Stream Deck XL profiles so I'm not fumbling around while switching scenes or opening apps. Plus, I need to get my Odyssey G5 monitors prepped to track F1 Fantasy and live telemetry—especially keeping an eye on those 2026 wet tyre procedures and Alonso's lap times.", 
+                  specs: "Gear: Stream Deck XL / 34\" Odyssey G5" }
             ]},
-            { id: "tier3", name: "Professional Frontier", tasks: [
-                { id: "t3_sub0", name: "Update klovar.cc Portfolio Layout", brief: "Transitioning dashboard to active portfolio.", specs: "Stack: Firebase / GitHub Pages" },
-                { id: "t3_sub1", name: "Inject Home Lab Metrics into Resume", brief: "Optimizing career documents with project specs.", specs: "Target: Systems Admin roles" },
-                { id: "t3_sub2", name: "Log 3 Daily Job Applications", brief: "Consistent job searching and logging.", specs: "Tracker: Career Matrix" }
+            { id: "tier3", name: "The Daily Grind", tasks: [
+                { id: "t3_sub0", name: "Resume & Portfolio Injection", 
+                  brief: "Adding homelab networking and storage metrics to my CV.", 
+                  extended: "Building this website and managing a 61.8TB server isn't just for fun—it's actual IT engineering.\n\nThe exact goal is to inject all these homelab stats, Docker deployments, and 2.5Gbps networking metrics directly into my resume. I'm actively hunting for a Junior Sysadmin or IT Support role around Roswell, and I need my portfolio to reflect the real-world tech I manage every single day.", 
+                  specs: "Target: IT Support / SysAdmin" },
+                { id: "t3_sub1", name: "Stick 'Em Up! Dev Push", 
+                  brief: "Squashing bugs and refining the gameplay loop.", 
+                  extended: "Between the server maintenance and the job hunt, I'm still grinding away on game development.\n\nThe exact goal is to squash the current bugs in 'Stick 'Em Up!', refine the gameplay loop, and inch closer to a stable build. It takes a lot of late nights and coffee, which is exactly why the Ko-fi link is sitting at the bottom of this page.", 
+                  specs: "Focus: Unity / Game Dev" },
+                { id: "t3_sub2", name: "Maintain klovar.cc Framework", 
+                  brief: "Keeping this Firebase-linked dashboard running smoothly.", 
+                  extended: "You're looking at it.\n\nThe exact goal is to keep this Firebase-linked, GitHub Pages-hosted command center running smoothly. It's a live-updating brain dump of my projects, linked straight to my BlueSky. It acts as a public accountability mirror and a live portfolio of my front-end and database integration skills.", 
+                  specs: "Stack: Firebase / Web" }
             ] }
         ];
 
@@ -150,9 +179,10 @@
             const item = allItemsFlat.find(i => i.id === id);
             if (!item) return;
             document.getElementById('detail-title').innerText = item.name;
-            document.getElementById('detail-desc').innerText = item.brief;
+            // Uses the long-form organic text
+            document.getElementById('detail-desc').innerText = item.extended || item.brief;
             const specsEl = document.getElementById('detail-specs');
-            if (item.specs) { specsEl.innerHTML = `<b>SYSTEM SPECS:</b><br>${item.specs}`; }
+            if (item.specs) { specsEl.innerHTML = `<b>SYSTEM SPECS / TARGET:</b><br>${item.specs}`; }
             const currentIndex = allItemsFlat.findIndex(i => i.id === id);
             const nextItem = allItemsFlat[currentIndex + 1];
             const nextBtn = document.getElementById('next-btn');
@@ -167,8 +197,8 @@
             });
             if (currentId) {
                 const statusEl = document.getElementById('detail-status');
-                if (data[currentId]) { statusEl.innerText = "● COMPLETED"; statusEl.style.color = "var(--green)"; }
-                else { statusEl.innerText = "● ACTIVE MISSION"; statusEl.style.color = "var(--orange)"; }
+                if (data[currentId]) { statusEl.innerText = "● STATUS: SECURED"; statusEl.style.color = "var(--green)"; }
+                else { statusEl.innerText = "● STATUS: IN PROGRESS"; statusEl.style.color = "var(--orange)"; }
             }
         });
     </script>
