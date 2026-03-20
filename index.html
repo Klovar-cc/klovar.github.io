@@ -2,179 +2,56 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>klovar.cc | Tasks</title>
     <style>
-        :root { 
-            --bg: #1a1614; /* Deep Gunsmoke */
-            --panel: #2a2420; /* Dark Wood */
-            --border: #4a3f35; /* Weathered Iron */
-            --text: #e0d5c1; /* Desert Sand */
-            --blue: #f39c12; /* Sunset Orange */
-            --green: #2ecc71; /* Cactus Green */
-            --kofi: #ff5e5b;
-        }
-        body { 
-            background: var(--bg); 
-            color: var(--text); 
-            font-family: 'Courier New', Courier, monospace; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-        }
+        :root { --bg: #1a1614; --panel: #2a2420; --border: #4a3f35; --text: #e0d5c1; --blue: #f39c12; --green: #238636; }
+        body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; padding: 40px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 650px; }
-
-        /* Stick 'Em Up Hero Section */
-        .hero { 
-            width: 100%; 
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('artwork.jpg'); /* Replace artwork.jpg with your actual file name */
-            background-size: cover;
-            background-position: center;
-            border: 2px solid var(--blue);
-            border-radius: 12px;
-            padding: 40px 20px;
-            text-align: center;
-            margin-bottom: 30px;
-            box-shadow: 0 0 20px rgba(243, 156, 18, 0.2);
-        }
-        .hero h1 { 
-            color: var(--blue); 
-            font-size: 2.5rem; 
-            margin: 0; 
-            text-transform: uppercase; 
-            text-shadow: 2px 2px #000;
-        }
-        .hero p { font-style: italic; color: #f1c40f; margin-top: 10px; }
-
-        .tier-label { 
-            color: var(--blue); 
-            font-size: 0.9rem; 
-            margin-top: 30px; 
-            display: block; 
-            text-transform: uppercase; 
-            letter-spacing: 2px;
-            border-left: 4px solid var(--blue);
-            padding-left: 10px;
-        }
-        .item { 
-            padding: 15px; 
-            border-bottom: 1px solid var(--border); 
-            display: flex; 
-            align-items: center; 
-            background: rgba(42, 36, 32, 0.5);
-        }
-        .check { 
-            width: 20px; 
-            height: 20px; 
-            border: 2px solid var(--border); 
-            margin-right: 15px; 
-            border-radius: 4px; 
-            flex-shrink: 0; 
-        }
-        .done { color: #7f8c8d; opacity: 0.7; }
+        .hero { width: 100%; border: 2px solid var(--blue); border-radius: 12px; padding: 30px 10px; text-align: center; margin-bottom: 30px; background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)); }
+        h1 { color: var(--blue); font-size: 2.2rem; margin: 0; text-transform: uppercase; }
+        .tier-label { color: var(--blue); font-size: 0.9rem; margin-top: 30px; display: block; text-transform: uppercase; border-left: 4px solid var(--blue); padding-left: 10px; }
+        .item { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; background: rgba(42, 36, 32, 0.4); }
+        .check { width: 18px; height: 18px; border: 2px solid var(--border); margin-right: 15px; border-radius: 4px; flex-shrink: 0; }
+        .done { color: #7f8c8d; opacity: 0.6; }
         .done span { text-decoration: line-through; }
-        .done .check { 
-            background: var(--green); 
-            border-color: var(--green); 
-            position: relative; 
-        }
-        .done .check::after { 
-            content: '✕'; /* More of a 'bounty marked' look than a checkmark */
-            color: black; 
-            font-size: 14px; 
-            font-weight: bold;
-            position: absolute; 
-            left: 3px; 
-            top: -1px; 
-        }
-        
-        .log-box { 
-            margin-top: 30px; 
-            background: var(--panel); 
-            border: 1px dashed var(--blue); 
-            padding: 20px; 
-            border-radius: 8px; 
-        }
-        .log-title { color: var(--blue); font-size: 0.8rem; margin-bottom: 10px; display: block; font-weight: bold;}
-        #status-log { color: #f1c40f; font-size: 1.1rem; line-height: 1.4; }
-        
-        .footer-links { margin-top: 40px; display: flex; flex-direction: column; gap: 12px; }
-        .btn { 
-            display: block; 
-            text-align: center; 
-            padding: 15px; 
-            text-decoration: none; 
-            border-radius: 8px; 
-            border: 2px solid var(--border); 
-            font-size: 1rem; 
-            font-weight: bold;
-            transition: 0.3s; 
-            color: white; 
-            text-transform: uppercase;
-        }
-        .share { background: #34495e; border-color: #2c3e50; }
-        .kofi { background: var(--kofi); border-color: #c0392b; }
-        .btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); filter: brightness(1.1); }
+        .done .check { background: var(--green); border-color: var(--green); position: relative; }
+        .done .check::after { content: '✕'; color: black; font-size: 14px; font-weight: bold; position: absolute; left: 2px; top: -2px; }
+        .log-box { margin-top: 30px; background: var(--panel); border: 1px dashed var(--blue); padding: 15px; border-radius: 8px; }
+        #status-log { color: #f1c40f; font-size: 1rem; }
+        .footer-links { margin-top: 40px; display: flex; flex-direction: column; gap: 10px; }
+        .btn { display: block; text-align: center; padding: 15px; text-decoration: none; border-radius: 8px; border: 2px solid var(--border); font-size: 1rem; font-weight: bold; color: white; text-transform: uppercase; transition: 0.3s; }
+        .share { background: #34495e; }
+        .kofi { background: #ff5e5b; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="hero">
-            <h1>Klovar Tasks</h1>
-            <p>Project: Stick 'Em Up! // Operational Log</p>
-        </div>
-
+        <div class="hero"><h1>Klovar Tasks</h1></div>
         <div id="list"></div>
-        
-        <div class="log-box">
-            <span class="log-title">TELEGRAM_FROM_THE_FRONTIER:</span>
-            <div id="status-log">Connecting to the grid...</div>
-        </div>
-
+        <div class="log-box"><div id="status-log">...waiting for telegram...</div></div>
         <div class="footer-links">
             <a id="share-link" class="btn share" target="_blank" href="#">Broadcast Progress</a>
-            <a href="https://ko-fi.com/klovar" class="btn kofi" target="_blank">Support the Outlaw (Ko-fi)</a>
+            <a href="https://ko-fi.com/klovar" class="btn kofi" target="_blank">Support (Ko-fi)</a>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBQm_CtzkeFCu4prCBOGG3j2ZuSd7IEf_0",
-            authDomain: "klovar-cc.firebaseapp.com",
-            projectId: "klovar-cc",
-            databaseURL: "https://klovar-cc-default-rtdb.firebaseio.com",
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyBQm_CtzkeFCu4prCBOGG3j2ZuSd7IEf_0", authDomain: "klovar-cc.firebaseapp.com", projectId: "klovar-cc", databaseURL: "https://klovar-cc-default-rtdb.firebaseio.com" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
         const tasks = [
-            { id: "t1_1", tier: "Hardware & Iron", name: "Moving the Stash (182GB File Migration)" },
-            { id: "t1_2", tier: "", name: "The Saturday Surgery: Cleaning & Repasting" },
-            { id: "t1_3", tier: "", name: "Expanding the Vault: New Storage Array" },
-            { id: "t2_1", tier: "The Server Engine", name: "High-Speed Video Processing" },
-            { id: "t2_2", tier: "", name: "Automated Photo Vaulting" },
-            { id: "t4_1", tier: "Stick 'Em Up! Development", name: "Outlaw Movement & Interaction Tuning" },
-            { id: "t4_2", tier: "", name: "Fleshing out the Frontier Lore" },
-            { id: "t5_1", tier: "The Career Matrix", name: "Refining the Professional Portfolio" },
-            { id: "t5_2", tier: "", name: "Scouting for New Opportunities" }
+            { id: "t1_main", tier: "Infrastructure", name: "Hardware & Iron Surgery" },
+            { id: "t2_main", tier: "Media Engine", name: "The Server Vault" },
+            { id: "t5_main", tier: "Professional", name: "The Career Matrix" }
         ];
 
         const listDiv = document.getElementById('list');
         tasks.forEach(t => {
-            if(t.tier) {
-                const label = document.createElement('span');
-                label.className = 'tier-label';
-                label.innerText = t.tier;
-                listDiv.appendChild(label);
-            }
-            const div = document.createElement('div');
-            div.id = "row-" + t.id;
-            div.className = "item";
+            if(t.tier) { const label = document.createElement('span'); label.className = 'tier-label'; label.innerText = t.tier; listDiv.appendChild(label); }
+            const div = document.createElement('div'); div.id = "row-" + t.id; div.className = "item";
             div.innerHTML = `<div class="check"></div><span>${t.name}</span>`;
             listDiv.appendChild(div);
         });
@@ -182,15 +59,11 @@
         onValue(ref(db), (snap) => {
             const data = snap.val() || {};
             const taskData = data.tasks || {};
-            let count = 0;
             tasks.forEach(t => {
                 const row = document.getElementById("row-" + t.id);
-                if (taskData[t.id]) { row.classList.add('done'); count++; }
-                else { row.classList.remove('done'); }
+                taskData[t.id] ? row.classList.add('done') : row.classList.remove('done');
             });
-            document.getElementById('status-log').innerText = data.log || "No telegrams received.";
-            const text = encodeURIComponent(`Bounty Progress: [${count}/${tasks.length}] tasks cleared on the frontier.`);
-            document.getElementById('share-link').href = `https://bsky.app/intent/compose?text=${text}&url=https://klovar.cc`;
+            document.getElementById('status-log').innerText = data.log || "Frontier quiet.";
         });
     </script>
 </body>
