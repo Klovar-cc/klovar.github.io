@@ -2,13 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>klovar.cc | Operations</title>
+    <title>klovar.cc | Tasks</title>
     <style>
         :root { --bg: #1a1614; --panel: #2a2420; --border: #4a3f35; --text: #e0d5c1; --orange: #f39c12; --green: #238636; }
         body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .container { width: 100%; max-width: 700px; position: relative; }
-        .hero { border: 2px solid var(--orange); border-radius: 12px; padding: 30px; text-align: center; margin-bottom: 30px; background: rgba(0,0,0,0.4); }
+        
+        /* Header Link Styling */
+        .hero { border: 2px solid var(--orange); border-radius: 12px; padding: 30px; text-align: center; margin-bottom: 30px; background: rgba(0,0,0,0.4); transition: 0.3s; text-decoration: none; display: block; }
+        .hero:hover { background: rgba(243, 156, 18, 0.1); transform: translateY(-2px); }
         h1 { color: var(--orange); font-size: 2.2rem; margin: 0; text-transform: uppercase; }
+
         .tier-label { color: var(--orange); font-size: 0.9rem; margin-top: 30px; display: block; text-transform: uppercase; border-left: 4px solid var(--orange); padding-left: 12px; cursor: pointer; position: relative; }
         .item { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; background: rgba(42, 36, 32, 0.4); cursor: pointer; position: relative; transition: 0.2s; }
         .item:hover { background: rgba(243, 156, 18, 0.1); }
@@ -23,12 +27,11 @@
         .done .check { background: var(--green); border-color: var(--green); position: relative; }
         .done .check::after { content: '✕'; color: black; font-size: 14px; position: absolute; left: 2px; top: -2px; }
 
-        /* Detail View (Hidden until clicked) */
+        /* Detail View */
         #detail-view { display: none; width: 100%; max-width: 700px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 40px; }
         .nav-row { display: flex; justify-content: space-between; margin-top: 40px; }
         .nav-btn { background: #1f2937; border: 1px solid var(--border); color: var(--text); padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
         
-        /* Ko-fi Rescued & Fixed */
         .kofi { display: block; text-align: center; margin-top: 50px; background: #ff5e5b; color: white; padding: 16px; text-decoration: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; border: 1px solid #4a3f35; width: 100%; box-sizing: border-box; transition: 0.2s; }
         .kofi:hover { filter: brightness(1.1); transform: translateY(-2px); }
     </style>
@@ -36,7 +39,10 @@
 <body>
 
     <div id="main-view" class="container">
-        <div class="hero"><h1>KLOVAR OPERATIONS</h1></div>
+        <a href="https://bsky.app/profile/klovar.cc" class="hero" target="_blank">
+            <h1>KLOVAR TASKS</h1>
+        </a>
+        
         <div id="list">Synchronizing stream...</div>
         <a href="https://ko-fi.com/stickemupgame" class="kofi" target="_blank">Support Stick 'Em Up! (Ko-fi)</a>
     </div>
@@ -69,12 +75,12 @@
             { id: "tier2", name: "Server & Media Engine", brief: "Automated video conversion and cloud backup deployment.", desc: "Initializing the 'Server Vault' logic: Setting up automated H.265 media compression, establishing a high-throughput network link, and deploying a private photos backup solution.", tasks: [
                 { id: "t2_sub0", name: "Configure Tdarr H.265 Node", brief: "Enabling hardware encoding on RTX 3080 Ti.", desc: "Deploying a dedicated Tdarr transcoding node. Utilizing the RTX 3080 Ti's NVENC core to automatically compress raw DaVinci masters into space-efficient HEVC files.", specs: "Node: SERVER1 [Docker] / HEVC [NVENC] codec." },
                 { id: "t2_sub1", name: "Verify 2.5Gbps Network Link", brief: "Testing high-throughput internal fabric.", desc: "Confirming full 2.5Gbps bidirectional throughput across the internal network fabric (Workstation to Server). Required for immediate offload of large-scale OBS recordings.", specs: "Protocol: iPerf3 / Cat6a termination / Realtek RTL8125 controller." },
-                { id: "t2_sub2", name: "Initialize Immich Photo Backup", brief: "Setting up private Google Photos alternative.", desc: "Setting up a private, high-capacity Google Photos alternative for the S25 Ultra.", specs: "Sync: 512GB local storage to 60TB NAS vault via Wi-Fi 6." }
+                { id: "t2_sub2", name: "Initialize Immich Photo Backup", brief: "Establishing a high-capacity Google Photos alternative.", desc: "Setting up a private, high-capacity Google Photos alternative for the S25 Ultra.", specs: "Sync: 512GB local storage to 60TB NAS vault via Wi-Fi 6." }
             ]},
-            { id: "tier3", name: "Career & Portfolio", brief: "Professional documentation and job applications.", desc: "Strategic career maneuvering: Update the klovar.cc portfolio with direct metrics from this homelab project, injecting those stats into professional resumes, and executing the daily application matrix.", tasks: [
+            { id: "tier3", name: "Professional Frontier", brief: "Updating professional documentation and executing the job matrix.", desc: "Strategic career maneuvering: Update the klovar.cc portfolio with direct metrics from this homelab project, injecting those stats into professional resumes, and executing the daily application matrix.", tasks: [
                 { id: "t3_sub0", name: "Update klovar.cc Portfolio Layout", brief: "Transitioning dashboard to active portfolio.", desc: "Transitioning this operations dashboard from a static list to a fully interactive technical portfolio. Showcasing proficiency in real-time data sync, DNS management, and technical documentation.", specs: "Stack: Firebase Realtime DB, GitHub Pages, Custom DNS." },
-                { id: "t3_sub1", name: "Inject Home Lab Metrics into Resume", brief: "Optimizing career documents with project specs.", desc: "Revising professional resumes and LinkedIn profiles to highlight senior-level IT and Systems Admin skills acquired from this project. Quantifying accomplishments.", specs: "Metrics: 61.8 TB Storage Management, 2.5Gbps Networking fabric, Docker container orchestration." },
-                { id: "t3_sub2", name: "Log 3 Daily Job Applications", brief: "Consistent job searching and logging.", desc: "Executing the daily application matrix: Targeted searching and logging of 3 relevant Junior Systems Administrator or Technical Writer roles.", specs: "Log: Job Hunt Matrix (Career Matrix folder)." }
+                { id: "t3_sub1", name: "Resume: Inject Home Lab Metrics", brief: "Optimizing career documents with project specs.", desc: "Revising professional resumes and LinkedIn profiles to highlight senior-level IT and Systems Admin skills acquired from this project. Quantifying accomplishments.", specs: "Metrics: 61.8 TB Storage Management, 2.5Gbps Networking fabric, Docker container orchestration." },
+                { id: "t3_sub2", name: "Log 3 Daily Job Applications", brief: "Consistent job searching and applications.", desc: "Executing the daily application matrix: Targeted searching and logging of 3 relevant Junior Systems Administrator or Technical Writer roles.", specs: "Log: Job Hunt Matrix (Career Matrix folder)." }
             ] }
         ];
 
