@@ -2,21 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>klovar.cc | STATUS</title>
+    <title>klovar.cc | Tasks</title>
     <style>
-        :root { --bg: #0d1117; --panel: #161b22; --border: #30363d; --text: #c9d1d9; --blue: #58a6ff; }
-        body { background: var(--bg); color: var(--text); font-family: monospace; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        :root { --bg: #0d1117; --panel: #161b22; --border: #30363d; --text: #c9d1d9; --blue: #58a6ff; --green: #238636; }
+        body { background: var(--bg); color: var(--text); font-family: monospace; padding: 40px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 600px; }
-        .item { padding: 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; }
-        .check { width: 15px; height: 15px; border: 1px solid var(--border); margin-right: 15px; }
-        .done { text-decoration: line-through; color: #8b949e; }
-        .done .check { background: #238636; border-color: #238636; }
-        .share { margin-top: 30px; background: #1f2937; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 0.9rem; }
+        h1 { color: var(--blue); text-align: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        .tier-label { color: #8b949e; font-size: 0.8rem; margin-top: 25px; display: block; text-transform: uppercase; }
+        .item { padding: 12px; border-bottom: 1px solid #21262d; display: flex; align-items: center; transition: 0.3s; }
+        .check { width: 16px; height: 16px; border: 1px solid var(--border); margin-right: 15px; border-radius: 3px; }
+        .done { color: #8b949e; opacity: 0.6; }
+        .done span { text-decoration: line-through; }
+        .done .check { background: var(--green); border-color: var(--green); position: relative; }
+        .done .check::after { content: '✔'; color: white; font-size: 10px; position: absolute; left: 2px; top: -1px; }
+        .share { margin-top: 40px; display: block; text-align: center; background: #1f2937; color: white; padding: 12px; text-decoration: none; border-radius: 6px; font-size: 0.9rem; border: 1px solid var(--border); }
+        .share:hover { background: #2d3748; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>[ KLOVAR OPERATIONS ]</h1>
+        <h1>[ KLOVAR TASKS ]</h1>
         <div id="list"></div>
         <a id="share-link" class="share" target="_blank" href="#">SHARE PROGRESS TO BLUESKY</a>
     </div>
@@ -36,15 +41,25 @@
         const db = getDatabase(app);
 
         const tasks = [
-            { id: "t1_1", name: "182GB Photo Migration" },
-            { id: "t1_2", name: "5950X Repaste Surgery" },
-            { id: "t2_1", name: "NVENC H.265 Tdarr Node" },
-            { id: "t4_1", name: "'Stick 'Em Up!' Prototype" },
-            { id: "t5_1", name: "Career Matrix Resume Update" }
+            { id: "t1_1", tier: "Infrastructure", name: "Moving Large Files (182GB)" },
+            { id: "t1_2", tier: "", name: "PC Cleanup & Maintenance" },
+            { id: "t1_3", tier: "", name: "Setting up New Storage" },
+            { id: "t2_1", tier: "Media Server", name: "Optimizing Video Processing" },
+            { id: "t2_2", tier: "", name: "Photo Backup System" },
+            { id: "t4_1", tier: "Creative", name: "Game Design: Basic Movement" },
+            { id: "t4_2", tier: "", name: "Daily Creative Writing" },
+            { id: "t5_1", tier: "Professional", name: "Updating Resume/Portfolio" },
+            { id: "t5_2", tier: "", name: "Daily Job Search" }
         ];
 
         const listDiv = document.getElementById('list');
         tasks.forEach(t => {
+            if(t.tier) {
+                const label = document.createElement('span');
+                label.className = 'tier-label';
+                label.innerText = t.tier;
+                listDiv.appendChild(label);
+            }
             const div = document.createElement('div');
             div.id = "row-" + t.id;
             div.className = "item";
@@ -60,8 +75,7 @@
                 if (data[t.id]) { row.classList.add('done'); count++; }
                 else { row.classList.remove('done'); }
             });
-
-            const text = encodeURIComponent(`Klovar Operations Update: [${count}/${tasks.length}] missions complete. Status at: https://klovar.cc`);
+            const text = encodeURIComponent(`Klovar Task Update: [${count}/${tasks.length}] goals met. Tracking live at: https://klovar.cc`);
             document.getElementById('share-link').href = `https://bsky.app/intent/compose?text=${text}`;
         });
     </script>
