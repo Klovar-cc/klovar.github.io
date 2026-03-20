@@ -29,6 +29,7 @@
         .item { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; background: rgba(42, 36, 32, 0.4); cursor: pointer; position: relative; transition: 0.2s; }
         .item:hover { background: rgba(243, 156, 18, 0.1); border-left: 2px solid var(--orange); }
         
+        /* Hover Briefing - Positioned Right */
         .briefing { display: none; position: absolute; left: 102%; top: 0; width: 280px; background: var(--panel); border: 1px solid var(--orange); padding: 15px; z-index: 100; border-radius: 8px; font-size: 0.85rem; pointer-events: none; box-shadow: 5px 5px 15px rgba(0,0,0,0.6); line-height: 1.4; color: #f1c40f; }
         .item:hover .briefing { display: block; }
 
@@ -36,9 +37,9 @@
         .done { color: #7f8c8d; opacity: 0.6; }
         .done span { text-decoration: line-through; }
         .done .check { background: var(--green); border-color: var(--green); position: relative; }
-        .done .check::after { content: '✕'; color: black; font-size: 14px; position: absolute; left: 2px; top: -2px; }
+        .done .check::after { content: '✕'; color: white; font-size: 14px; position: absolute; left: 2px; top: -2px; }
 
-        /* Navigation & Footer */
+        /* Navigation & Detail View */
         #detail-view { display: none; width: 100%; max-width: 700px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 40px; box-sizing: border-box; }
         .nav-row { display: flex; justify-content: space-between; margin-top: 40px; }
         .nav-btn { background: #1f2937; border: 1px solid var(--border); color: var(--text); padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
@@ -59,7 +60,7 @@
             </div>
         </div>
         
-        <div id="list">Establishing secure link...</div>
+        <div id="list">Synchronizing with secure database...</div>
         <a href="https://ko-fi.com/stickemupgame" class="kofi" target="_blank">Support Stick 'Em Up! (Ko-fi)</a>
     </div>
 
@@ -86,19 +87,19 @@
         const db = getDatabase(app);
 
         const schema = [
-            { id: "tier1", name: "Infrastructure & Hardware", brief: "Direct system maintenance and upgrades.", desc: "Full tactical refresh of the Ryzen 9 workstation.", tasks: [
+            { id: "tier1", name: "Infrastructure & Hardware", brief: "System maintenance and storage upgrades.", tasks: [
                 { id: "t1_sub0", name: "Moving Files (182GB)", brief: "Migrating video captures to main 60TB vault.", specs: "Protocol: Robocopy / 2.5Gbps Link" },
                 { id: "t1_sub1", name: "Deep Cleaning 5950X", brief: "Teardown and thermal repaste of the CPU.", specs: "Tools: 99% IPA / Kryonaut" },
                 { id: "t1_sub2", name: "Mount WD Red Drive Array", brief: "Installing 8TB drives and initializing volume.", specs: "Hardware: WD Red Plus" }
             ]},
-            { id: "tier2", name: "Media & Server Engine", brief: "Automated video conversion and cloud deployment.", desc: "Deploying automated pipelines for video conversion.", tasks: [
+            { id: "tier2", name: "Server & Media Engine", brief: "Automated video conversion and deployment.", tasks: [
                 { id: "t2_sub0", name: "Configure Tdarr H.265 Node", brief: "Enabling hardware encoding on 3080 Ti.", specs: "Hardware: NVENC Node" },
                 { id: "t2_sub1", name: "Verify 2.5Gbps Network Link", brief: "Testing high-throughput internal fabric.", specs: "Protocol: iPerf3 Validation" },
-                { id: "t2_sub2", name: "Initialize Immich Photo Backup", brief: "Establishing a private Google Photos alternative.", specs: "Target: S25 Ultra Sync" }
+                { id: "t2_sub2", name: "Initialize Immich Photo Backup", brief: "Establishing a private photos alternative.", specs: "Target: S25 Ultra Sync" }
             ]},
-            { id: "tier3", name: "Professional Frontier", brief: "Professional documentation and job matrix.", desc: "Strategic career maneuvering and documentation.", tasks: [
+            { id: "tier3", name: "Professional Frontier", brief: "Professional documentation and job matrix.", tasks: [
                 { id: "t3_sub0", name: "Update klovar.cc Portfolio Layout", brief: "Transitioning dashboard to active portfolio.", specs: "Stack: Firebase / GitHub Pages" },
-                { id: "t3_sub1", name: "Inject Home Lab Metrics into Resume", brief: "Optimizing career documents with project specs.", specs: "Target: Systems Admin / IT roles" },
+                { id: "t3_sub1", name: "Inject Home Lab Metrics into Resume", brief: "Optimizing career documents with project specs.", specs: "Target: Systems Admin roles" },
                 { id: "t3_sub2", name: "Log 3 Daily Job Applications", brief: "Consistent job searching and logging.", specs: "Tracker: Career Matrix" }
             ] }
         ];
