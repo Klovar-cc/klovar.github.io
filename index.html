@@ -5,28 +5,59 @@
     <title>klovar.cc | Operations</title>
     <style>
         :root { --bg: #1a1614; --panel: #2a2420; --border: #4a3f35; --text: #e0d5c1; --orange: #f39c12; --green: #238636; }
-        body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; padding: 40px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 650px; }
-        .hero { width: 100%; border: 2px solid var(--orange); border-radius: 12px; padding: 35px 10px; text-align: center; margin-bottom: 30px; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)); }
-        h1 { color: var(--orange); font-size: 2.4rem; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
-        .tier-label { color: var(--orange); font-size: 0.9rem; margin-top: 35px; display: block; text-transform: uppercase; border-left: 4px solid var(--orange); padding-left: 12px; margin-bottom: 12px; }
-        .item { padding: 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; background: rgba(42, 36, 32, 0.4); }
-        .check { width: 18px; height: 18px; border: 2px solid var(--border); margin-right: 15px; border-radius: 3px; flex-shrink: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 700px; display: block; }
+        
+        /* Main Page Styling */
+        .hero { border: 2px solid var(--orange); border-radius: 12px; padding: 30px; text-align: center; margin-bottom: 30px; background: rgba(0,0,0,0.4); cursor: pointer; }
+        .tier-label { color: var(--orange); font-size: 0.9rem; margin-top: 30px; display: block; text-transform: uppercase; border-left: 4px solid var(--orange); padding-left: 12px; }
+        
+        .item { 
+            padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; 
+            background: rgba(42, 36, 32, 0.4); cursor: pointer; position: relative; transition: 0.2s;
+        }
+        .item:hover { background: rgba(243, 156, 18, 0.1); border-left: 2px solid var(--orange); }
+        
+        /* Hover Tooltip */
+        .briefing { 
+            display: none; position: absolute; left: 105%; top: 0; width: 250px; 
+            background: var(--panel); border: 1px solid var(--orange); padding: 15px; 
+            z-index: 100; border-radius: 8px; font-size: 0.8rem; pointer-events: none;
+            box-shadow: 10px 10px 20px rgba(0,0,0,0.5);
+        }
+        .item:hover .briefing { display: block; }
+
+        .check { width: 18px; height: 18px; border: 1px solid var(--border); margin-right: 15px; border-radius: 3px; flex-shrink: 0; }
         .done { color: #7f8c8d; opacity: 0.6; }
-        .done span { text-decoration: line-through; }
         .done .check { background: var(--green); border-color: var(--green); position: relative; }
-        .done .check::after { content: '✕'; color: black; font-size: 14px; font-weight: bold; position: absolute; left: 2px; top: -2px; }
-        .log-box { margin-top: 35px; background: var(--panel); border: 1px dashed var(--orange); padding: 18px; border-radius: 8px; }
-        #status-log { color: #f1c40f; font-size: 1.1rem; }
-        .kofi { display: block; text-align: center; margin-top: 40px; background: #ff5e5b; color: white; padding: 16px; text-decoration: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; border: 1px solid #4a3f35; }
+        .done .check::after { content: '✕'; color: black; font-size: 14px; position: absolute; left: 2px; top: -2px; }
+
+        /* Detail Page Styling */
+        #detail-view { display: none; width: 100%; max-width: 700px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 40px; box-sizing: border-box; }
+        .nav-row { display: flex; justify-content: space-between; margin-top: 40px; }
+        .nav-btn { background: #1f2937; border: 1px solid var(--border); color: var(--text); padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 0.8rem; }
+        .nav-btn:hover { background: var(--orange); color: black; }
+        .detail-status { font-weight: bold; margin-bottom: 10px; display: block; }
     </style>
 </head>
 <body>
-    <div class="container">
+
+    <div id="main-view" class="container">
         <div class="hero"><h1>KLOVAR OPERATIONS</h1></div>
         <div id="list"></div>
-        <div class="log-box"><div id="status-log">Broadcasting from the Frontier...</div></div>
-        <a href="https://ko-fi.com/klovar" class="kofi" target="_blank">Support the Outlaw (Ko-fi)</a>
+    </div>
+
+    <div id="detail-view">
+        <h2 id="detail-title" style="color:var(--orange)"></h2>
+        <span id="detail-status" class="detail-status"></span>
+        <p id="detail-desc" style="line-height:1.6; color:#bdc3c7"></p>
+        <hr style="border:0; border-top:1px solid var(--border); margin:30px 0;">
+        <div id="detail-specs" style="font-size:0.9rem; font-family:sans-serif;"></div>
+        
+        <div class="nav-row">
+            <a href="?" class="nav-btn">← BACK TO COMMAND</a>
+            <a href="#" id="next-btn" class="nav-btn">NEXT MISSION →</a>
+        </div>
     </div>
 
     <script type="module">
@@ -37,31 +68,92 @@
         const db = getDatabase(app);
 
         const schema = [
-            { tier: "Hardware & Iron Surgery", tasks: ["Phase 1: 182GB Data Extraction", "Phase 2: 5950X Thermal Refresh", "Phase 3: 8TB WD Red Array Integration"] },
-            { tier: "The Media Engine", tasks: ["Stream Pipeline: OBS 1440p Calibration", "Ingest: Tdarr H.265 Automation", "Vault: Immich Mobile Sync Deployment"] },
-            { tier: "The Professional Frontier", tasks: ["Portfolio: Update klovar.cc Core Site", "Resume: Inject 60TB Systems Metrics", "The Hunt: Execute Daily Job Matrix"] }
+            { tier: "Hardware & Iron Surgery", tasks: [
+                { id: "t1_sub0", name: "Phase 1: 182GB Data Extraction", desc: "Moving 182GB of large-scale video captures and personal media from temporary storage to the main array.", specs: "Protocol: Multi-threaded Robocopy / NVMe to NVMe Link / 2.5Gbps validation." },
+                { id: "t1_sub1", name: "Phase 2: 5950X Thermal Refresh", desc: "Full teardown and cleaning of the Ryzen 9 workstation to resolve escalating thermal issues.", specs: "Materials: 99% Isopropyl, Thermal Grizzly Kryonaut, NZXT Kraken X73 re-seating." },
+                { id: "t1_sub2", name: "Phase 3: 8TB WD Red Array Integration", desc: "Physical mounting and volume expansion of the RAID 10 array.", specs: "Hardware: WD Red Plus, vibration-dampening foam, SATA 3.0 link." }
+            ]},
+            { tier: "The Media Engine", tasks: [
+                { id: "t2_sub0", name: "OBS 1440p Calibration", desc: "Calibrating multistream canvases for high-fidelity output on YouTube and Twitch.", specs: "Resolution: 2560x1440 Upscale / NVENC H.264 / 165Hz Display Sync." },
+                { id: "t2_sub1", name: "Tdarr H.265 Automation", desc: "Setting up a transcoding node to automatically convert raw gaming footage into compressed HEVC files.", specs: "Hardware: RTX 3080 Ti NVENC / Tdarr Node [SERVER1]." },
+                { id: "t2_sub2", name: "Immich Mobile Sync Deployment", desc: "Establishing a private Google Photos alternative for the S25 Ultra.", specs: "Sync: 512GB local storage to 61.8TB NAS vault via Wi-Fi 6." }
+            ]},
+            { tier: "The Professional Frontier", tasks: [
+                { id: "t3_sub0", name: "Portfolio: klovar.cc Layout Update", desc: "Transitioning this dashboard from a placeholder to a fully interactive technical portfolio.", specs: "Stack: Firebase Realtime DB, GitHub Pages, Custom DNS." },
+                { id: "t3_sub1", name: "Resume: System Metrics Injection", desc: "Optimizing career documents to reflect senior-level homelab engineering skills.", specs: "Key Stats: 61.8 TB Storage Management, 2.5Gbps Networking, Docker Stack Orchestration." },
+                { id: "t3_sub2", name: "The Hunt: Daily Job Matrix", desc: "Consistent execution of the job search protocol.", specs: "Target: IT Support, Systems Admin, Junior Dev Roles." }
+            ]}
         ];
 
-        const listDiv = document.getElementById('list');
-        schema.forEach((section, sIndex) => {
-            const label = document.createElement('span'); label.className = 'tier-label'; label.innerText = section.tier; listDiv.appendChild(label);
-            section.tasks.forEach((task, tIndex) => {
-                const div = document.createElement('div');
-                div.id = `task-t${sIndex + 1}_sub${tIndex}`;
-                div.className = "item";
-                div.innerHTML = `<div class="check"></div><span>${task}</span>`;
-                listDiv.appendChild(div);
-            });
-        });
+        const allTasksFlat = schema.flatMap(s => s.tasks);
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentTaskId = urlParams.get('task');
 
-        onValue(ref(db), (snap) => {
-            const data = snap.val() || {};
-            const subs = data.subtasks || {};
-            document.querySelectorAll('.item').forEach(el => {
-                const id = el.id.replace('task-', '');
-                subs[id] ? el.classList.add('done') : el.classList.remove('done');
+        // Logic to toggle between views
+        if (currentTaskId) {
+            document.getElementById('main-view').style.display = 'none';
+            document.getElementById('detail-view').style.display = 'block';
+            renderDetailPage(currentTaskId);
+        } else {
+            renderMainList();
+        }
+
+        function renderMainList() {
+            const listDiv = document.getElementById('list');
+            schema.forEach(section => {
+                const label = document.createElement('span'); label.className = 'tier-label'; label.innerText = section.tier; listDiv.appendChild(label);
+                section.tasks.forEach(task => {
+                    const div = document.createElement('div');
+                    div.id = `task-${task.id}`;
+                    div.className = "item";
+                    div.onclick = () => window.location.href = `?task=${task.id}`;
+                    div.innerHTML = `
+                        <div class="check"></div>
+                        <span>${task.name}</span>
+                        <div class="briefing"><b>Mission Briefing:</b><br>${task.desc}</div>
+                    `;
+                    listDiv.appendChild(div);
+                });
             });
-            document.getElementById('status-log').innerText = data.log || "No status update yet.";
+        }
+
+        function renderDetailPage(id) {
+            const task = allTasksFlat.find(t => t.id === id);
+            if (!task) return;
+            document.getElementById('detail-title').innerText = task.name;
+            document.getElementById('detail-desc').innerText = task.desc;
+            document.getElementById('detail-specs').innerHTML = `<b>TECHNICAL SPECS:</b><br>${task.specs}`;
+            
+            // Handle Next Button
+            const currentIndex = allTasksFlat.findIndex(t => t.id === id);
+            const nextTask = allTasksFlat[currentIndex + 1];
+            const nextBtn = document.getElementById('next-btn');
+            if (nextTask) {
+                nextBtn.href = `?task=${nextTask.id}`;
+            } else {
+                nextBtn.style.display = 'none';
+            }
+        }
+
+        // Live Database Sync
+        onValue(ref(db, 'subtasks'), (snap) => {
+            const data = snap.val() || {};
+            // Update List View
+            allTasksFlat.forEach(t => {
+                const row = document.getElementById(`task-${t.id}`);
+                if (row) {
+                    data[t.id] ? row.classList.add('done') : row.classList.remove('done');
+                }
+            });
+            // Update Detail View if open
+            if (currentTaskId) {
+                const statusEl = document.getElementById('detail-status');
+                if (data[currentTaskId]) {
+                    statusEl.innerText = "● STATUS: COMPLETED"; statusEl.style.color = "var(--green)";
+                } else {
+                    statusEl.innerText = "● STATUS: ACTIVE MISSION"; statusEl.style.color = "var(--orange)";
+                }
+            }
         });
     </script>
 </body>
