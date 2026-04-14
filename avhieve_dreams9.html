@@ -408,7 +408,8 @@
                         <div id="auth-status" class="auth-status">Cloud sync: local-only mode.</div>
                         <div class="auth-row">
                             <input id="auth-email-input" type="email" placeholder="owner@email.com">
-                            <button id="auth-login-btn" class="action-btn" style="margin-top: 0;">Owner Login Link</button>
+                            <input id="auth-password-input" type="password" placeholder="Owner password">
+                            <button id="auth-login-btn" class="action-btn" style="margin-top: 0;">Owner Password Login</button>
                             <button id="auth-logout-btn" class="action-btn" style="margin-top: 0;">Logout</button>
                         </div>
                     </div>
@@ -1034,14 +1035,17 @@
         const authLoginBtn = document.getElementById('auth-login-btn');
         const authLogoutBtn = document.getElementById('auth-logout-btn');
         const authEmailInput = document.getElementById('auth-email-input');
+        const authPasswordInput = document.getElementById('auth-password-input');
         if (authLoginBtn) {
             authLoginBtn.onclick = async () => {
                 if (!supabaseClient) return alert('Cloud mode not configured yet. Add Supabase URL/key in the script first.');
                 const email = (authEmailInput && authEmailInput.value || '').trim();
+                const password = (authPasswordInput && authPasswordInput.value || '').trim();
                 if (!email) return alert('Enter your owner email first.');
-                const { error } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href } });
-                if (error) return alert(`Login link failed: ${error.message}`);
-                alert('Login link sent. Open it on this same device/browser.');
+                if (!password) return alert('Enter your owner password.');
+                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) return alert(`Login failed: ${error.message}`);
+                location.reload();
             };
         }
         if (authLogoutBtn) {
