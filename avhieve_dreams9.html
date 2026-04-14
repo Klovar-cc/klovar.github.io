@@ -399,12 +399,7 @@
                         <h3>Personal Notes</h3>
                         <p>Offline-first for Galaxy S25 Ultra: this page runs without internet, and you can export/import a full local snapshot (tasks + notes + runtime timeline) before any OS wipe.</p>
                     </div>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;">
-                        <button id="export-snapshot-btn" class="action-btn" style="margin-top: 0;">Export Offline Snapshot</button>
-                        <button id="import-snapshot-btn" class="action-btn" style="margin-top: 0;">Import Offline Snapshot</button>
-                        <input id="snapshot-file-input" type="file" accept="application/json" style="display: none;">
-                    </div>
-                    <div class="auth-wrap">
+                    <div id="auth-wrap" class="auth-wrap">
                         <div id="auth-status" class="auth-status">Cloud sync: local-only mode.</div>
                         <div class="auth-row">
                             <input id="auth-email-input" type="email" placeholder="owner@email.com">
@@ -413,13 +408,24 @@
                             <button id="auth-logout-btn" class="action-btn" style="margin-top: 0;">Logout</button>
                         </div>
                     </div>
-                    <textarea id="journal-input" placeholder="Write a personal note..."></textarea>
-                    <button id="add-entry-btn" class="action-btn">Save Note</button>
-                    <div id="journal-entries" style="margin-top: 30px;"></div>
-                    <details style="margin-top: 25px;">
-                        <summary style="cursor: pointer; color: var(--accent-cursor); font-weight: 700; letter-spacing: 1px;">Show System Timeline</summary>
-                        <div id="system-entries" style="margin-top: 16px;"></div>
-                    </details>
+                    <div id="notes-locked-message" class="mission-block" style="display: none;">
+                        <h3>Private Notes Vault</h3>
+                        <p>This section is login-protected. Sign in with owner credentials to view and edit notes.</p>
+                    </div>
+                    <div id="notes-private-content">
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;">
+                            <button id="export-snapshot-btn" class="action-btn" style="margin-top: 0;">Export Offline Snapshot</button>
+                            <button id="import-snapshot-btn" class="action-btn" style="margin-top: 0;">Import Offline Snapshot</button>
+                            <input id="snapshot-file-input" type="file" accept="application/json" style="display: none;">
+                        </div>
+                        <textarea id="journal-input" placeholder="Write a personal note..."></textarea>
+                        <button id="add-entry-btn" class="action-btn">Save Note</button>
+                        <div id="journal-entries" style="margin-top: 30px;"></div>
+                        <details style="margin-top: 25px;">
+                            <summary style="cursor: pointer; color: var(--accent-cursor); font-weight: 700; letter-spacing: 1px;">Show System Timeline</summary>
+                            <div id="system-entries" style="margin-top: 16px;"></div>
+                        </details>
+                    </div>
                 </div>
             </main>
 
@@ -486,6 +492,19 @@
             if (status) status.innerText = message;
             if (saveBtn) saveBtn.disabled = !canEdit();
             if (noteInput) noteInput.disabled = !canEdit();
+            syncNotesVisibility();
+        }
+
+        function syncNotesVisibility() {
+            const authWrap = document.getElementById('auth-wrap');
+            const privateContent = document.getElementById('notes-private-content');
+            const lockedMessage = document.getElementById('notes-locked-message');
+            const locked = cloudMode && !isOwner;
+
+            // Public cloud viewers see login-only shell.
+            if (authWrap) authWrap.style.display = isOwner ? 'none' : '';
+            if (privateContent) privateContent.style.display = locked ? 'none' : '';
+            if (lockedMessage) lockedMessage.style.display = locked ? '' : 'none';
         }
 
         async function fetchRemoteState() {
