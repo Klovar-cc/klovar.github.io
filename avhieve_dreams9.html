@@ -617,17 +617,8 @@
             { date: "4/13/2026, 1:57:27 PM", text: "Removed static system log block and integrated dynamic, red-accented Gemini update logs into the main journal feed.", isSystem: true }
         ];
 
-        // --- CURSOR (IDE) UPDATE LOGS — orange timeline; keep each entry to 1-2 sentences ---
-        const cursorChangelogs = [
-            { date: "4/14/2026, 11:12:00 AM", text: "Added a new Preservation task to transfer B: drive files before rebuild prep. This made the backup phase include explicit array-prep handling." },
-            { date: "4/14/2026, 11:16:00 AM", text: "Added Cursor backup coverage under Preservation and documented the key profile paths to save. This protects settings, workspace metadata, and global storage before wipe." },
-            { date: "4/14/2026, 11:20:00 AM", text: "Reworked B: clearing guidance to match your RAID 0 plan so no manual delete pass is required. Added RAID 0 steps in both build and post-build stages." },
-            { date: "4/14/2026, 11:28:00 AM", text: "Built a reverse restore structure in Rebuild with dedicated restore tiers and right-panel protocols. This mirrors backup intent with actionable restore flow." },
-            { date: "4/14/2026, 11:33:00 AM", text: "Added DRM/license safety steps in Preservation, then split them into per-app tasks for faster execution. This reduced one long block into focused checkboxes." },
-            { date: "4/14/2026, 11:40:00 AM", text: "Expanded Rebuild with matching license restore tasks for DisplayFusion, Camo Studio, and Voicemeeter REGEN. Backup and restore now align for those licensed tools." },
-            { date: "4/14/2026, 11:47:00 AM", text: "Converted technical restore wording into plain language by replacing shorthand with 'same folders' phrasing. This improved readability and reduced cognitive load during rebuild." },
-            { date: "4/14/2026, 11:55:00 AM", text: "Redesigned tab labels and overhauled the notes area into Notes Vault with Personal Notes plus a separate System Timeline. Added fallback migration from common legacy note keys to reduce perceived data loss." }
-        ];
+        // Cursor timeline channel retired by user request.
+        const cursorChangelogs = [];
 
         const tracks = [
             "Pristine_State.mp3",
@@ -922,13 +913,14 @@
 
             const systemNormalized = [
                 ...systemChangelogs.map(e => ({ ...e, logKind: 'gemini' })),
-                ...cursorChangelogs.map(e => ({ ...e, logKind: 'cursor' })),
-                ...runtimeEntries.map(e => ({
-                    date: e.date,
-                    text: e.text,
-                    logKind: e.source === 'gemini' ? 'gemini' : 'cursor',
-                    isPurple: false
-                }))
+                ...runtimeEntries
+                    .filter(e => e.source === 'gemini')
+                    .map(e => ({
+                        date: e.date,
+                        text: e.text,
+                        logKind: 'gemini',
+                        isPurple: false
+                    }))
             ];
 
             userEntries.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -953,9 +945,9 @@
             if (!systemList) return;
             systemNormalized.forEach(e => {
                 const div = document.createElement('div');
-                let color = e.logKind === 'cursor' ? 'var(--accent-cursor)' : 'var(--accent-red)';
-                div.className = e.logKind === 'cursor' ? 'entry-card cursor-entry' : 'entry-card system-entry';
-                let title = e.logKind === 'cursor' ? `CURSOR UPDATE - ${e.date}` : `GEMINI UPDATE - ${e.date}`;
+                let color = 'var(--accent-red)';
+                div.className = 'entry-card system-entry';
+                let title = `GEMINI UPDATE - ${e.date}`;
 
                 if (e.isPurple) {
                     color = '#bf00ff';
