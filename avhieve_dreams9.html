@@ -421,10 +421,6 @@
                         <textarea id="journal-input" placeholder="Write a personal note..."></textarea>
                         <button id="add-entry-btn" class="action-btn">Save Note</button>
                         <div id="journal-entries" style="margin-top: 30px;"></div>
-                        <details style="margin-top: 25px;">
-                            <summary style="cursor: pointer; color: var(--accent-cursor); font-weight: 700; letter-spacing: 1px;">Show System Timeline</summary>
-                            <div id="system-entries" style="margin-top: 16px;"></div>
-                        </details>
                     </div>
                 </div>
             </main>
@@ -904,27 +900,11 @@
 
         function renderJournal() {
             const personalList = document.getElementById('journal-entries');
-            const systemList = document.getElementById('system-entries');
             if (!personalList) return;
             personalList.innerHTML = '';
-            if (systemList) systemList.innerHTML = '';
             const userEntries = loadUserJournalEntries();
-            const runtimeEntries = loadRuntimeJournalEntries();
-
-            const systemNormalized = [
-                ...systemChangelogs.map(e => ({ ...e, logKind: 'gemini' })),
-                ...runtimeEntries
-                    .filter(e => e.source === 'gemini')
-                    .map(e => ({
-                        date: e.date,
-                        text: e.text,
-                        logKind: 'gemini',
-                        isPurple: false
-                    }))
-            ];
 
             userEntries.sort((a, b) => new Date(b.date) - new Date(a.date));
-            systemNormalized.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             userEntries.forEach(e => {
                 const div = document.createElement('div');
@@ -941,26 +921,6 @@
                 empty.innerHTML = `<span style="color:var(--accent-blue); font-size:0.8rem; font-weight:bold;">No personal notes yet</span><p style="margin:5px 0 0 0">Write one above and click Save Note.</p>`;
                 personalList.appendChild(empty);
             }
-
-            if (!systemList) return;
-            systemNormalized.forEach(e => {
-                const div = document.createElement('div');
-                let color = 'var(--accent-red)';
-                div.className = 'entry-card system-entry';
-                let title = `GEMINI UPDATE - ${e.date}`;
-
-                if (e.isPurple) {
-                    color = '#bf00ff';
-                    div.className = 'entry-card system-entry';
-                    div.style.borderLeftColor = color;
-                    div.style.background = 'rgba(191, 0, 255, 0.1)';
-                    div.style.boxShadow = '0 0 10px rgba(191, 0, 255, 0.2)';
-                    title = `GEMINI UPDATE - ${e.date}`;
-                }
-
-                div.innerHTML = `<span style="color:${color}; font-size:0.8rem; font-weight:bold;">${title}</span><p style="margin:5px 0 0 0">${e.text}</p>`;
-                systemList.appendChild(div);
-            });
         }
 
         function exportOfflineSnapshot() {
