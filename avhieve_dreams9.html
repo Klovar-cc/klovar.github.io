@@ -534,15 +534,28 @@
 
         async function initCloudMode() {
             const hasConfig = SUPABASE_URL.trim() && SUPABASE_ANON_KEY.trim();
-            if (!hasConfig || !window.supabase || !window.supabase.createClient) {
+            const supabaseGlobal = window.supabase || globalThis.supabase;
+            if (!hasConfig || !supabaseGlobal || !supabaseGlobal.createClient) {
                 appData.checklist = readLocalChecklist();
                 appData.notes = loadUserJournalEntriesLocal();
-                updateAuthUI('Cloud sync: local-only mode.');
+                updateAuthUI('Cloud sync: local-only mode (Supabase SDK not loaded).');
                 return;
             }
 
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            supabaseClient = supabaseGlobal.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             cloudMode = true;
+
+            const ping = await supabaseClient
+                .from(SUPABASE_STATE_TABLE)
+                .select('id')
+                .limit(1);
+            if (ping.error) {
+                appData.checklist = readLocalChecklist();
+                appData.notes = loadUserJournalEntriesLocal();
+                cloudMode = false;
+                updateAuthUI(`Cloud sync error: ${ping.error.message}`);
+                return;
+            }
 
             const { data: authData } = await supabaseClient.auth.getUser();
             const email = authData?.user?.email || '';
