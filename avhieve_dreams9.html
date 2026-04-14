@@ -489,6 +489,7 @@
             if (saveBtn) saveBtn.disabled = !canEdit();
             if (noteInput) noteInput.disabled = !canEdit();
             syncNotesVisibility();
+            syncInstructionPanelVisibility();
         }
 
         function syncNotesVisibility() {
@@ -501,6 +502,14 @@
             if (authWrap) authWrap.style.display = isOwner ? 'none' : '';
             if (privateContent) privateContent.style.display = locked ? 'none' : '';
             if (lockedMessage) lockedMessage.style.display = locked ? '' : 'none';
+        }
+
+        function syncInstructionPanelVisibility() {
+            const panel = document.getElementById('info-panel');
+            if (!panel) return;
+            // In cloud mode, only logged-in owner can see/toggle the instruction side panel.
+            panel.style.display = cloudMode && !isOwner ? 'none' : '';
+            if (cloudMode && !isOwner) panel.classList.remove('active');
         }
 
         async function fetchRemoteState() {
@@ -739,6 +748,7 @@
         };
 
         function toggleProtocol(task) {
+            if (cloudMode && !isOwner) return;
             const panel = document.getElementById('info-panel');
             if (lastTask === task && panel.classList.contains('active')) {
                 panel.classList.remove('active');
@@ -845,8 +855,10 @@
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             document.getElementById('nav-' + id).classList.add('active');
-            document.getElementById('info-panel').classList.remove('active');
+            const panel = document.getElementById('info-panel');
+            panel.classList.remove('active');
             lastTask = null;
+            syncInstructionPanelVisibility();
         }
 
         function loadRuntimeJournalEntries() {
