@@ -204,7 +204,8 @@
         }
 
         li { margin: 15px 0; display: flex; align-items: flex-start; gap: 15px; }
-        .task-text { cursor: help; color: var(--text-muted); transition: color 0.2s; font-size: 0.95rem; }
+        .task-text { cursor: default; color: var(--text-muted); transition: color 0.2s; font-size: 0.95rem; }
+        body.owner-mode .task-text { cursor: help; }
         .task-text:hover { color: var(--accent-blue); }
         
         /* Completed Task Text Styling */
@@ -490,6 +491,7 @@
             if (noteInput) noteInput.disabled = !canEdit();
             syncNotesVisibility();
             syncInstructionPanelVisibility();
+            syncOwnerModeClass();
         }
 
         function syncNotesVisibility() {
@@ -510,6 +512,10 @@
             // In cloud mode, only logged-in owner can see/toggle the instruction side panel.
             panel.style.display = cloudMode && !isOwner ? 'none' : '';
             if (cloudMode && !isOwner) panel.classList.remove('active');
+        }
+
+        function syncOwnerModeClass() {
+            document.body.classList.toggle('owner-mode', !!isOwner);
         }
 
         async function fetchRemoteState() {
