@@ -1,0 +1,874 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Klovar Mission Hub</title>
+    <style>
+        :root {
+            --bg-color: #0c101d;
+            --container-bg: #151a2d;
+            --text-main: #e8ecf0;
+            --text-muted: #94a3b8;
+            --accent-blue: #00e0ff;
+            --accent-blue-subdue: rgba(0, 224, 255, 0.4);
+            --accent-red: #ff3366;
+            --accent-red-subdue: rgba(255, 51, 102, 0.1);
+            --accent-cursor: #ff8c42;
+            --accent-cursor-subdue: rgba(255, 140, 66, 0.12);
+            --border: #334155;
+            --nav-width: 240px;
+            --top-bar-height: 85px;
+            --bottom-bar-height: 70px;
+            color-scheme: dark;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-image: url('Pristine State.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-blend-mode: multiply;
+            background-color: rgba(0, 0, 0, 0.85);
+            overflow: hidden;
+        }
+
+        .top-audio-bar {
+            height: var(--top-bar-height);
+            background: rgba(10, 17, 30, 0.98);
+            border-bottom: 2px solid var(--accent-blue-subdue);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(15px);
+            z-index: 100;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        @keyframes pulseGlow { 
+            0% { opacity: 0.8; } 
+            50% { opacity: 1; text-shadow: 0 0 10px var(--accent-blue); } 
+            100% { opacity: 0.8; } 
+        }
+
+        #audio-status { 
+            font-size: 0.75rem; 
+            color: var(--accent-blue); 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            letter-spacing: 4px;
+            animation: pulseGlow 3s infinite;
+        }
+
+        audio { 
+            height: 32px; 
+            width: 480px; 
+            filter: invert(100%) hue-rotate(180deg) brightness(0.7) contrast(1.2); 
+        }
+
+        .master-container { display: flex; flex: 1; overflow: hidden; }
+
+        nav {
+            width: var(--nav-width);
+            background: rgba(10, 17, 30, 0.85);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0 0 0;
+        }
+
+        .nav-btn {
+            background: none; border: none; color: var(--text-muted); padding: 18px 25px;
+            font-size: 0.8rem; cursor: pointer; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 1px; transition: all 0.2s; text-align: left; border-left: 3px solid transparent;
+        }
+        .nav-btn:hover { background: rgba(0, 224, 255, 0.05); color: var(--text-main); }
+        .nav-btn.active { color: var(--accent-blue); border-left: 3px solid var(--accent-blue); background: rgba(0, 224, 255, 0.1); }
+
+        .bottom-progress-bar {
+            height: var(--bottom-bar-height);
+            background: rgba(10, 17, 30, 0.98);
+            border-top: 2px solid var(--accent-blue-subdue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 40px;
+            backdrop-filter: blur(15px);
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .progress-wrapper {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 1000px;
+            gap: 20px;
+        }
+
+        .progress-label { 
+            font-size: 0.8rem; 
+            color: var(--accent-blue); 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            white-space: nowrap;
+        }
+        
+        .progress-percent { 
+            font-size: 1.5rem; 
+            font-weight: bold; 
+            color: var(--text-main); 
+            font-family: 'Consolas', monospace; 
+            min-width: 65px; 
+            text-align: right; 
+        }
+        
+        .progress-bar-container { 
+            flex: 1; 
+            height: 10px; 
+            background: rgba(0, 0, 0, 0.6); 
+            border-radius: 10px; 
+            overflow: hidden; 
+            border: 1px solid var(--border); 
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.8);
+        }
+        
+        .progress-fill { 
+            height: 100%; 
+            background: linear-gradient(90deg, var(--accent-blue-subdue), var(--accent-blue)); 
+            width: 0%; 
+            transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 0 15px var(--accent-blue-subdue);
+        }
+
+        .main-content { flex: 1; display: flex; overflow: hidden; position: relative; }
+        .content-area { flex: 1.6; padding: 40px; overflow-y: auto; scrollbar-width: thin; }
+        
+        .instruction-panel {
+            flex: 1; background: rgba(13, 17, 27, 0.96); border-left: 1px solid var(--accent-blue-subdue);
+            padding: 35px; overflow-y: auto; display: none; box-shadow: -20px 0 50px rgba(0,0,0,0.8);
+        }
+        .instruction-panel.active { display: block; animation: slideIn 0.3s cubic-bezier(0.19, 1, 0.22, 1); }
+        @keyframes slideIn { from { transform: translateX(20%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .instruction-panel h3 { color: var(--accent-blue); border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-top: 0; }
+        .instruction-panel code { background: #000; color: #00ffcc; padding: 3px 8px; border-radius: 4px; font-family: 'Consolas', monospace; }
+
+        .mission-block { background: rgba(0, 224, 255, 0.05); border: 1px solid var(--accent-blue-subdue); padding: 25px; border-radius: 12px; margin-bottom: 35px; }
+        .mission-block h3 { margin-top: 0; font-size: 1.1rem; color: var(--accent-blue); text-transform: uppercase; }
+        .mission-block p { font-size: 0.95rem; line-height: 1.6; margin: 10px 0 0 0; }
+
+        .cat-group { 
+            background: rgba(21, 26, 45, 0.4); 
+            border: 1px solid var(--border); 
+            border-radius: 10px; 
+            padding: 25px; 
+            margin-bottom: 30px; 
+            transition: all 0.3s ease;
+        }
+        
+        /* Completed Category Styling */
+        .cat-group.completed { 
+            border-color: var(--accent-red-subdue); 
+            background: linear-gradient(145deg, rgba(21, 26, 45, 0.6) 0%, rgba(255, 51, 102, 0.05) 100%);
+        }
+        
+        .cat-header { display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1rem; color: var(--accent-blue); margin-bottom: 15px; }
+        
+        .milestone-link { cursor: pointer; transition: transform 0.2s; }
+        .milestone-link:hover { transform: scale(1.01); background: rgba(255,255,255,0.03); }
+
+        input[type="checkbox"] {
+            appearance: none; width: 1.4em; height: 1.4em; border: 2px solid var(--border);
+            border-radius: 4px; cursor: pointer; display: grid; place-content: center; flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        
+        /* Completed Checkbox Styling */
+        input[type="checkbox"]:checked {
+            border-color: var(--accent-red);
+            background-color: var(--accent-red-subdue);
+        }
+        input[type="checkbox"]:checked::before {
+            content: ""; width: 0.8em; height: 0.8em; background-color: var(--accent-red);
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        }
+
+        li { margin: 15px 0; display: flex; align-items: flex-start; gap: 15px; }
+        .task-text { cursor: help; color: var(--text-muted); transition: color 0.2s; font-size: 0.95rem; }
+        .task-text:hover { color: var(--accent-blue); }
+        
+        /* Completed Task Text Styling */
+        input[type="checkbox"]:checked + .task-text { 
+            text-decoration: line-through; 
+            text-decoration-color: var(--accent-red);
+            text-decoration-thickness: 2px;
+            opacity: 0.6; 
+        }
+
+        .page { display: none; }
+        .page.active { display: block; }
+
+        textarea { width: 100%; min-height: 140px; background: #080c14; color: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 15px; box-sizing: border-box; }
+        .action-btn { background: var(--accent-blue-subdue); border: 1px solid var(--accent-blue); color: #fff; padding: 12px 28px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: background 0.2s; }
+        .action-btn:hover { background: var(--accent-blue); color: #000; }
+        
+        /* Journal Entry Cards */
+        .entry-card { padding: 20px; border-radius: 8px; margin-top: 20px; }
+        .user-entry { background: rgba(0,0,0,0.3); border-left: 4px solid var(--accent-blue); }
+        .system-entry { background: var(--accent-red-subdue); border-left: 4px solid var(--accent-red); }
+        .cursor-entry { background: var(--accent-cursor-subdue); border-left: 4px solid var(--accent-cursor); }
+
+        /* Mobile/tablet layout for Android and narrow screens */
+        @media (max-width: 980px) {
+            body {
+                height: auto;
+                min-height: 100vh;
+                overflow: auto;
+                background-attachment: scroll;
+            }
+
+            .top-audio-bar {
+                height: auto;
+                padding: 10px 12px;
+                position: sticky;
+                top: 0;
+            }
+
+            #audio-status {
+                letter-spacing: 2px;
+                font-size: 0.68rem;
+                text-align: center;
+            }
+
+            audio {
+                width: min(100%, 560px);
+                max-width: 100%;
+            }
+
+            .master-container {
+                flex-direction: column;
+                overflow: visible;
+            }
+
+            nav {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+                overflow-y: hidden;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding: 0;
+                scrollbar-width: thin;
+            }
+
+            .nav-btn {
+                flex: 0 0 auto;
+                text-align: center;
+                white-space: nowrap;
+                padding: 14px 16px;
+                border-left: none;
+                border-bottom: 3px solid transparent;
+                font-size: 0.74rem;
+            }
+
+            .nav-btn.active {
+                border-left: none;
+                border-bottom: 3px solid var(--accent-blue);
+            }
+
+            .main-content {
+                flex-direction: column;
+                overflow: visible;
+            }
+
+            .content-area {
+                padding: 18px;
+                overflow: visible;
+            }
+
+            .instruction-panel {
+                width: auto;
+                border-left: none;
+                border-top: 1px solid var(--accent-blue-subdue);
+                padding: 18px;
+                box-shadow: 0 -20px 50px rgba(0,0,0,0.6);
+                max-height: 45vh;
+            }
+
+            .cat-group {
+                padding: 18px;
+                margin-bottom: 18px;
+            }
+
+            li {
+                gap: 12px;
+                margin: 12px 0;
+            }
+
+            input[type="checkbox"] {
+                width: 1.6em;
+                height: 1.6em;
+            }
+
+            .task-text {
+                font-size: 0.98rem;
+            }
+
+            .bottom-progress-bar {
+                height: auto;
+                padding: 10px 12px;
+                position: sticky;
+                bottom: 0;
+            }
+
+            .progress-wrapper {
+                gap: 10px;
+            }
+
+            .progress-label {
+                font-size: 0.68rem;
+                letter-spacing: 1px;
+            }
+
+            .progress-percent {
+                font-size: 1.1rem;
+                min-width: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-audio-bar">
+        <span id="audio-status">Initializing Audio...</span>
+        <audio id="dream-audio" controls autoplay>
+            <source src="Pristine_State.mp3" type="audio/mpeg">
+        </audio>
+    </header>
+
+    <div class="master-container">
+        <nav>
+            <button id="nav-overview" class="nav-btn active" onclick="showPage('overview')">00 Launchpad</button>
+            <button id="nav-logistics" class="nav-btn" onclick="showPage('logistics')">01 Procurement</button>
+            <button id="nav-physical" class="nav-btn" onclick="showPage('physical')">02 Hardware</button>
+            <button id="nav-backups" class="nav-btn" onclick="showPage('backups')">03 Preservation</button>
+            <button id="nav-software" class="nav-btn" onclick="showPage('software')">04 Execution</button>
+            <button id="nav-rebuild" class="nav-btn" onclick="showPage('rebuild')">05 Rebuild</button>
+            <button id="nav-visualize" class="nav-btn" onclick="showPage('visualize')">06 Notes Vault</button>
+        </nav>
+
+        <div class="main-content">
+            <main class="content-area">
+                <div id="overview" class="page active">
+                    <h2>Launchpad</h2>
+                    <div class="mission-block">
+                        <h3>Summary</h3>
+                        <p>Total workstation overhaul: physical cooling refresh, hardware relocation, and a pure-offline Windows 11 purification sweep.</p>
+                    </div>
+                    <div class="mission-block">
+                        <h3>End-State</h3>
+                        <p><b>Goal: Better PC.</b> <br>Local profile active on un-throttled Samsung 990 NVMe; zero cloud hooks, zero directory hijacking.</p>
+                    </div>
+                    <div id="mission-milestones"></div>
+                </div>
+
+                <div id="logistics" class="page"><h2>01 Procurement</h2><div id="procure-list"></div></div>
+                <div id="physical" class="page"><h2>02 Hardware</h2><div id="phys-list"></div></div>
+                <div id="backups" class="page"><h2>03 Preservation</h2><div id="backup-list"></div></div>
+                <div id="software" class="page"><h2>04 Execution</h2><div id="exec-list"></div></div>
+                <div id="rebuild" class="page"><h2>05 Rebuild</h2><div id="rebuild-list"></div></div>
+                
+                <div id="visualize" class="page">
+                    <h2>06 Notes Vault</h2>
+                    <div class="mission-block">
+                        <h3>Personal Notes</h3>
+                        <p>Offline-first for Galaxy S25 Ultra: this page runs without internet, and you can export/import a full local snapshot (tasks + notes + runtime timeline) before any OS wipe.</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;">
+                        <button id="export-snapshot-btn" class="action-btn" style="margin-top: 0;">Export Offline Snapshot</button>
+                        <button id="import-snapshot-btn" class="action-btn" style="margin-top: 0;">Import Offline Snapshot</button>
+                        <input id="snapshot-file-input" type="file" accept="application/json" style="display: none;">
+                    </div>
+                    <textarea id="journal-input" placeholder="Write a personal note..."></textarea>
+                    <button id="add-entry-btn" class="action-btn">Save Note</button>
+                    <div id="journal-entries" style="margin-top: 30px;"></div>
+                    <details style="margin-top: 25px;">
+                        <summary style="cursor: pointer; color: var(--accent-cursor); font-weight: 700; letter-spacing: 1px;">Show System Timeline</summary>
+                        <div id="system-entries" style="margin-top: 16px;"></div>
+                    </details>
+                </div>
+            </main>
+
+            <aside id="info-panel" class="instruction-panel">
+                <h3 id="info-title">Instructional Data</h3>
+                <div id="info-content">Select task text to toggle protocols.</div>
+            </aside>
+        </div>
+    </div>
+
+    <footer class="bottom-progress-bar">
+        <div class="progress-wrapper">
+            <span class="progress-label">System Restoration</span>
+            <div class="progress-bar-container"><div class="progress-fill" id="global-progress"></div></div>
+            <span id="progress-percent" class="progress-percent">0%</span>
+        </div>
+    </footer>
+
+    <script>
+        const STORAGE_KEY = 'manifest_tracker_v3';
+        const JOURNAL_KEY = 'manifestDreams_journal_entries';
+        const LEGACY_JOURNAL_KEYS = ['manifestDreams_journal', 'manifest_journal_entries', 'journal_entries'];
+        /** Append-only system lines (Cursor console, tooling) — survives refresh */
+        const JOURNAL_RUNTIME_KEY = 'manifestDreams_journal_runtime';
+        const SNAPSHOT_VERSION = 's25-offline-v1';
+        let lastTask = null;
+
+        // --- GEMINI SYSTEM UPDATE LOGS ---
+        const systemChangelogs = [
+            { date: "4/13/2026, 5:52:14 PM", text: "Generated avhieve_dreams9.html: Acknowledged the need for consistent system log tracking. I will ensure every new version includes a timestamped system log in this array.", isSystem: true },
+            { date: "4/13/2026, 3:45:00 PM", text: "Generated avhieve_dreams8.html: Updated the completion anthem track to 'System_Status_Hero.mp3' to match local directory assets.", isSystem: true },
+            { date: "4/13/2026, 3:35:00 PM", text: "Generated avhieve_dreams6.html: Appended 'Liquid-Cooled Logic.mp3' to the playlist array. Implemented auto-trigger logic to force-play the celebratory anthem upon reaching 100% mission completion.", isSystem: true },
+            { date: "4/13/2026, 3:25:00 PM", text: "Generated avhieve_dreams5.html: Added a custom, one-off neon purple log entry to the manifest.", isSystem: true, isPurple: true },
+            { date: "4/13/2026, 3:15:00 PM", text: "Generated avhieve_dreams4.html: Extracted progress tracker from the sidebar and deployed it as a dedicated, full-width footer element to mirror the audio header.", isSystem: true },
+            { date: "4/13/2026, 3:00:00 PM", text: "Generated avhieve_dreams3.html: Integrated Post-OS Rebuild (05) section, added MusicBee tracking to Preservation, and shifted Manifest Log to 06.", isSystem: true },
+            { date: "4/13/2026, 2:10:45 PM", text: "Added missing instructions to the dictionary. Applied the 'Purged' red/cyan aesthetic to completed tasks and categories. Upgraded UI elements with subtle glow animations.", isSystem: true },
+            { date: "4/13/2026, 1:57:27 PM", text: "Removed static system log block and integrated dynamic, red-accented Gemini update logs into the main journal feed.", isSystem: true }
+        ];
+
+        // --- CURSOR (IDE) UPDATE LOGS — orange timeline; keep each entry to 1-2 sentences ---
+        const cursorChangelogs = [
+            { date: "4/14/2026, 11:12:00 AM", text: "Added a new Preservation task to transfer B: drive files before rebuild prep. This made the backup phase include explicit array-prep handling." },
+            { date: "4/14/2026, 11:16:00 AM", text: "Added Cursor backup coverage under Preservation and documented the key profile paths to save. This protects settings, workspace metadata, and global storage before wipe." },
+            { date: "4/14/2026, 11:20:00 AM", text: "Reworked B: clearing guidance to match your RAID 0 plan so no manual delete pass is required. Added RAID 0 steps in both build and post-build stages." },
+            { date: "4/14/2026, 11:28:00 AM", text: "Built a reverse restore structure in Rebuild with dedicated restore tiers and right-panel protocols. This mirrors backup intent with actionable restore flow." },
+            { date: "4/14/2026, 11:33:00 AM", text: "Added DRM/license safety steps in Preservation, then split them into per-app tasks for faster execution. This reduced one long block into focused checkboxes." },
+            { date: "4/14/2026, 11:40:00 AM", text: "Expanded Rebuild with matching license restore tasks for DisplayFusion, Camo Studio, and Voicemeeter REGEN. Backup and restore now align for those licensed tools." },
+            { date: "4/14/2026, 11:47:00 AM", text: "Converted technical restore wording into plain language by replacing shorthand with 'same folders' phrasing. This improved readability and reduced cognitive load during rebuild." },
+            { date: "4/14/2026, 11:55:00 AM", text: "Redesigned tab labels and overhauled the notes area into Notes Vault with Personal Notes plus a separate System Timeline. Added fallback migration from common legacy note keys to reduce perceived data loss." }
+        ];
+
+        const tracks = [
+            "Pristine_State.mp3",
+            "Strip_the_Skin.mp3",
+            "Strip_the_Skin (1).mp3",
+            "System_Status_Hero.mp3",
+            "The_Heavy_Transfer.mp3",
+            "Execute_the_Purge.mp3",
+            "Manual_Override.mp3",
+            "The_Final_Keypress.mp3",
+            "Ctrl_Plus_L.mp3"
+        ];
+        let trackIdx = 0;
+        let shufflePool = [];
+        const audio = document.getElementById('dream-audio');
+        
+        function updateAudioLabel() {
+            const name = tracks[trackIdx].replace('.mp3', '').replace(/_/g, ' ');
+            document.getElementById('audio-status').innerText = `HUB ACTIVE: ${name}`;
+        }
+
+        function refillShufflePool(excludeIdx) {
+            shufflePool = tracks
+                .map((_, idx) => idx)
+                .filter(idx => idx !== excludeIdx);
+
+            // Fisher-Yates shuffle for unbiased random order.
+            for (let i = shufflePool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shufflePool[i], shufflePool[j]] = [shufflePool[j], shufflePool[i]];
+            }
+        }
+
+        function getNextShuffleIndex() {
+            if (tracks.length <= 1) return 0;
+            if (shufflePool.length === 0) refillShufflePool(trackIdx);
+            return shufflePool.pop();
+        }
+
+        audio.addEventListener('ended', () => {
+            trackIdx = getNextShuffleIndex();
+            audio.src = tracks[trackIdx];
+            updateAudioLabel();
+            audio.play();
+        });
+        updateAudioLabel();
+
+        // --- THE COMPLETE DICTIONARY ---
+        const protocols = {
+            "Hard Drive Cage / Steel Bracket Rack": "Assemble using provided plates; ensure 3.5-inch slots are cleared for RAID relocation.",
+            "100cm CRJ 15-Pin SATA Power Extension": "Extend PSU reach to the new cage location to prevent cable strain.",
+            "120mm USB 5V PC Fan + USB-C Adapter": "Position for exhaust/intake as needed; use USB-C adapter for external power source.",
+            
+            "Replace broken CPU fan": "Unmount old fan, clean area, mount new fan, ensure header is plugged into CPU_FAN on mobo.",
+            "Re-apply fresh thermal paste (5950X)": "Clean old paste with isopropyl alcohol. Apply pea-sized amount of new thermal paste.",
+            "Optimize 6x QL120 Airflow layout": "Set front/bottom to intake, rear/top to exhaust for optimal positive pressure.",
+            "Assemble HDD cage / Mount B-Drive Array": "Secure WD80EFAX drives in cage. Connect SATA data and power cables firmly.",
+            "Internal SATA/AIO Cable Management": "Route cables behind motherboard tray. Use zip ties or velcro straps to secure.",
+            "Desk Deep Clean": "Remove all items, wipe down surfaces, manage external cables.",
+
+            "Radarr/Sonarr Database Exports": "System -> Backup in Web UI; save <code>.zip</code> to safe storage.",
+            "SABnzbd config.ini & Scripts": "Copy <code>%AppData%/Local/SABnzbd/admin/config.ini</code> and custom scripts folder.",
+            "TDARR Plugin & Node Configs": "Copy JSON configs from install directory.",
+            "Plex Metadata/Watched States": "Backup <code>com.plexapp.plugins.library.db</code> in AppData Databases.",
+            "qBittorrent .fastresume & Categories": "Backup <code>%LOCALAPPDATA%\\qBittorrent\\BT_backup</code> and <code>qBittorrent.ini</code>.",
+            "Directory Opus .ocfg Export": "Settings -> Backup and Restore; export to B: Drive.",
+            "Voicemeeter XML Routing": "Menu -> Save Settings; store the <code>.xml</code>.",
+            "Synapse 4 Macros & Profiles": "Manual local export of Tartarus V2 and Naga V2 XML profiles.",
+            "Signal Desktop Local Messages": "Use Signal's built-in backup tool to export chat history locally.",
+            "Resolve Studio PowerBins & LUTs": "Export PowerBins from Media Pool. Copy LUT folder from <code>ProgramData\\Blackmagic Design</code>.",
+            "MusicBee Backup (Library & AppData)": "Export library via File -> Library -> Backup Library to E: Drive, or manually copy MusicBeeLibrary.mbl and %appdata%\\MusicBee.",
+            "Cursor App & Settings Backup": "Back up Cursor profile and project data before wipe: copy <code>%APPDATA%\\Cursor\\User</code> (settings/keybindings/snippets), <code>%APPDATA%\\Cursor\\User\\globalStorage</code>, and <code>%USERPROFILE%\\.cursor</code> (rules/skills/project metadata) to verified local storage.",
+            "DisplayFusion License Unhooking": "<b>Action</b>: DisplayFusion -> Settings -> License Key. Copy key to <code>E:\\Backup\\licenses.txt</code>.<br><br><b>Unhook</b>: log into Binary Fortress and remove this PC from active devices.",
+            "Camo Studio License Unhooking": "<b>Action</b>: open Camo Studio account/license tab.<br><br><b>Unhook</b>: click <code>Sign Out</code> or <code>Deactivate this device</code> to free the seat.",
+            "Voicemeeter License Ledger Backup": "<b>Action</b>: save Voicemeeter <b>License Code</b> + <b>Transaction ID</b> to <code>E:\\Backup\\licenses.txt</code>.<br><br><b>Critical</b>: required for <code>REGEN</code> after reinstall with the new Challenge Code.",
+            "Transfer B: Drive Files + New RAID Prep": "Move all required data off <code>B:</code> to verified storage and confirm integrity. No manual delete pass required if the next step is creating a brand-new RAID 0 array (array creation will wipe existing data).",
+            
+            "Decryption Check (16TB RAID 10)": "CRITICAL: Verify BitLocker or other encryption is fully suspended/disabled on the B: drive array before OS wipe to prevent data lock.",
+            "Rufus Build: No-Cloud/No-BitLocker": "Select ISO -> Start -> Check 'Remove MS Account' and 'Disable BitLocker'.",
+            "Confirm English-Only Profile Paths": "Verify English (US) during OOBE; delete any leftover localized desktop.ini folders (for example 'Documentos') if they appear.",
+            "Create New RAID 0 Array (B: Build Step)": "In motherboard/RAID controller utility, create a fresh RAID 0 array using target drives (this wipes existing array metadata/data). Confirm stripe settings and that the new volume is detected before proceeding.",
+
+            "Run BCU (Bulk Crap Uninstaller)": "Eradicate default Windows telemetry, pre-installed bloatware, and completely remove OneDrive.",
+            "Mount Synology NAS Drives": "Use Synology Assistant to map P: (Media), W: (Docker), X: (Drive), Y: (Main), Z: (PLEX) to your NAS host path.",
+            "Install Meta Quest Link": "Required for Quest 3 PCVR routing.",
+            "Custom 'Ninite' Bulk Install": "Install standard suite: Chrome/Firefox, Steam, Epic Games, Discord.",
+            "Media & Viewing Suite": "Install VLC Media Player, SVP (SmoothVideo Project), IrfanView (images), Calibre (ebooks).",
+            "Power User Utilities": "Install VoidTools Everything, Directory Opus, DisplayFusion, TeraCopy, WizTree.",
+            "Initialize & Validate RAID 0 Volume (Post-Build)": "In Disk Management, initialize/format the new RAID 0 volume (if needed), assign drive letter, run a quick health/speed sanity check, then restore data workflows to the new array.",
+            "Restoration Protocol: Keep Same Folder Layout": "<b>Rule</b>: put things back in the same folders they used before the wipe.<br><br><b>Apply to</b>: media roots, watch folders, scripts, app config directories, and mapped drive targets.<br><br><b>Why it matters</b>: changing folder locations can break automation, library links, and resume states.",
+            "Restore Core App Configs (Priority Order)": "<b>Order</b>: qBittorrent/SABnzbd -> Radarr/Sonarr -> Plex DB -> TDARR -> Voicemeeter/Synapse/Signal/Resolve/MusicBee/Cursor.<br><br><b>Action</b>: restore each app before opening dependent apps.<br><br><b>Verify</b>: launch each app once and confirm it reads restored config/state without path errors.",
+            "Restore Validation Sweep": "<b>Checklist</b>: confirm mapped drives, verify watch/download paths, run one test workflow in each core app, and sample-check file integrity on the new array.<br><br><b>Exit criteria</b>: no broken paths, no missing libraries, and no failed automation handoffs.",
+
+            "Restore Radarr/Sonarr Databases (same folders)": "<b>Restore</b>: import backup ZIPs in both apps.<br><br><b>Folder check</b>: keep root folders and download client paths the same as before.<br><br><b>Verify</b>: run library refresh and confirm queue/health is clean.",
+            "Restore SABnzbd config.ini & Scripts (same folders)": "<b>Restore</b>: place <code>config.ini</code> and custom scripts back into original SABnzbd paths.<br><br><b>Folder check</b>: categories, script paths, and download folders should stay the same as before.<br><br><b>Verify</b>: start SABnzbd and test one scripted category.",
+            "Restore TDARR Plugin & Node Configs (same folders)": "<b>Restore</b>: copy TDARR JSON/plugin configs to original config directories.<br><br><b>Folder check</b>: keep server/node paths and plugin stack names unchanged.<br><br><b>Verify</b>: node registers and plugin stack loads without missing references.",
+            "Restore Plex Metadata/Watched States (same folders)": "<b>Restore</b>: stop Plex, replace DB/metadata in original AppData database paths, then start Plex.<br><br><b>Folder check</b>: library paths should point to the same media folders as before.<br><br><b>Verify</b>: watched states, posters, and collections are present.",
+            "Restore qBittorrent .fastresume & Categories (same folders)": "<b>Restore</b>: return <code>BT_backup</code> and <code>qBittorrent.ini</code> to original LocalAppData locations.<br><br><b>Folder check</b>: category save paths and default download locations stay the same.<br><br><b>Verify</b>: torrents resume and categories map correctly.",
+            "Restore Directory Opus .ocfg Profile": "<b>Restore</b>: import the <code>.ocfg</code> via Directory Opus Backup/Restore.<br><br><b>Verify</b>: toolbars, aliases, scripts, hotkeys, and button banks load as expected.",
+            "Restore Synapse 4 Macros & Profiles": "<b>Restore</b>: import Synapse XML profiles/macros for Tartarus/Naga.<br><br><b>Verify</b>: profile switching works and test macros/keybinds fire correctly.",
+            "Restore Voicemeeter XML Routing": "<b>Restore</b>: load saved Voicemeeter XML/profile.<br><br><b>Verify</b>: hardware I/O buses, strip routing, and monitor path are correct with a quick mic/playback test.",
+            "Restore Signal Desktop Local Data": "<b>Restore</b>: point Signal Desktop to restored local data (if used) and complete relink if prompted.<br><br><b>Verify</b>: message history appears and current device stays linked.",
+            "Restore Resolve Studio PowerBins & LUTs": "<b>Restore</b>: import PowerBins and place LUT folder back into Resolve LUT path.<br><br><b>Verify</b>: LUTs appear in color page and PowerBins load in a test project.",
+            "Restore MusicBee Library & AppData (same folders)": "<b>Restore</b>: import MusicBee backup or copy library/AppData files back to matching paths.<br><br><b>Folder check</b>: library roots and custom folder mappings stay the same.<br><br><b>Verify</b>: playlists, ratings, and links resolve correctly.",
+            "Restore Cursor App & Settings (same folders)": "<b>Restore</b>: return <code>%APPDATA%\\Cursor\\User</code>, <code>%APPDATA%\\Cursor\\User\\globalStorage</code>, and <code>%USERPROFILE%\\.cursor</code> to original locations.<br><br><b>Folder check</b>: keep the same folder layout you had before the wipe.<br><br><b>Verify</b>: settings, rules, skills, and workspace context load after restart.",
+            "Restore DisplayFusion License": "<b>Restore</b>: open DisplayFusion and enter saved license key from <code>E:\\Backup\\licenses.txt</code>.<br><br><b>Verify</b>: app reports activated status and no seat-limit/license warning.",
+            "Restore Camo Studio License": "<b>Restore</b>: sign into Camo Studio with your licensed account on the rebuilt OS.<br><br><b>Verify</b>: premium features unlock and account page shows this device as active.",
+            "Restore Voicemeeter License (REGEN)": "<b>Restore</b>: use saved License Code + Transaction ID, then run Voicemeeter <code>REGEN</code> with the new Challenge Code.<br><br><b>Verify</b>: registration is accepted and watermark/trial restrictions are gone."
+        };
+
+        const sections = {
+            'procure-list': [{ title: "Arrivals", page: 'logistics', items: ["Hard Drive Cage / Steel Bracket Rack", "100cm CRJ 15-Pin SATA Power Extension", "120mm USB 5V PC Fan + USB-C Adapter"] }],
+            'phys-list': [{ title: "Cooling & Thermal", page: 'physical', items: ["Replace broken CPU fan", "Re-apply fresh thermal paste (5950X)", "Optimize 6x QL120 Airflow layout"] }, { title: "Chassis", page: 'physical', items: ["Assemble HDD cage / Mount B-Drive Array", "Internal SATA/AIO Cable Management", "Desk Deep Clean"] }],
+            'backup-list': [{ title: "Automation", page: 'backups', items: ["Radarr/Sonarr Database Exports", "SABnzbd config.ini & Scripts", "TDARR Plugin & Node Configs", "Plex Metadata/Watched States", "qBittorrent .fastresume & Categories"] }, { title: "Workspace", page: 'backups', items: ["Directory Opus .ocfg Export", "Synapse 4 Macros & Profiles", "Voicemeeter XML Routing", "Signal Desktop Local Messages", "Resolve Studio PowerBins & LUTs", "MusicBee Backup (Library & AppData)", "Cursor App & Settings Backup", "DisplayFusion License Unhooking", "Camo Studio License Unhooking", "Voicemeeter License Ledger Backup", "Transfer B: Drive Files + New RAID Prep"] }],
+            'exec-list': [{ title: "Purge", page: 'software', items: ["Decryption Check (16TB RAID 10)", "Rufus Build: No-Cloud/No-BitLocker", "Confirm English-Only Profile Paths", "Create New RAID 0 Array (B: Build Step)"] }],
+            'rebuild-list': [
+                { title: "Tier 1: OS Sterilization & Core", page: 'rebuild', items: ["Run BCU (Bulk Crap Uninstaller)", "Mount Synology NAS Drives", "Install Meta Quest Link"] }, 
+                { title: "Tier 2: The Bulk Install", page: 'rebuild', items: ["Custom 'Ninite' Bulk Install", "Media & Viewing Suite", "Power User Utilities", "Initialize & Validate RAID 0 Volume (Post-Build)"] },
+                { title: "Tier 3: Restoration Core", page: 'rebuild', items: ["Restoration Protocol: Keep Same Folder Layout", "Restore Core App Configs (Priority Order)", "Restore Validation Sweep"] },
+                { title: "Tier 4: Reverse Restore Matrix", page: 'rebuild', items: ["Restore Radarr/Sonarr Databases (same folders)", "Restore SABnzbd config.ini & Scripts (same folders)", "Restore TDARR Plugin & Node Configs (same folders)", "Restore Plex Metadata/Watched States (same folders)", "Restore qBittorrent .fastresume & Categories (same folders)", "Restore Directory Opus .ocfg Profile", "Restore Synapse 4 Macros & Profiles", "Restore Voicemeeter XML Routing", "Restore Signal Desktop Local Data", "Restore Resolve Studio PowerBins & LUTs", "Restore MusicBee Library & AppData (same folders)", "Restore Cursor App & Settings (same folders)", "Restore DisplayFusion License", "Restore Camo Studio License", "Restore Voicemeeter License (REGEN)"] }
+            ]
+        };
+
+        function toggleProtocol(task) {
+            const panel = document.getElementById('info-panel');
+            if (lastTask === task && panel.classList.contains('active')) {
+                panel.classList.remove('active');
+                lastTask = null; return;
+            }
+            document.getElementById('info-title').innerText = task;
+            document.getElementById('info-content').innerHTML = protocols[task] || "No specific instructions found.";
+            panel.classList.add('active'); lastTask = task;
+        }
+
+        function checkSection(id) {
+            let saved = {};
+            try {
+                const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                saved = parsed && typeof parsed === 'object' ? parsed : {};
+            } catch {
+                saved = {};
+            }
+            const items = sections[id].flatMap((g, gIdx) => g.items.map((_, iIdx) => `${id}_g${gIdx}_i${iIdx}`));
+            return items.length > 0 && items.every(id => saved[id]);
+        }
+
+        function renderAll() {
+            let saved = {};
+            try {
+                const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                saved = parsed && typeof parsed === 'object' ? parsed : {};
+            } catch {
+                saved = {};
+            }
+            for (const [id, groups] of Object.entries(sections)) {
+                const container = document.getElementById(id);
+                if(!container) continue; container.innerHTML = '';
+                groups.forEach((g, gIdx) => {
+                    const div = document.createElement('div');
+                    div.className = 'cat-group';
+                    let checked = 0;
+                    const itemsHtml = g.items.map((item, iIdx) => {
+                        const iID = `${id}_g${gIdx}_i${iIdx}`;
+                        if(saved[iID]) checked++;
+                        return `<li><input type="checkbox" id="${iID}" ${saved[iID] ? 'checked' : ''}><span class="task-text" onclick="toggleProtocol('${item}')">${item}</span></li>`;
+                    }).join('');
+                    if(checked === g.items.length) div.classList.add('completed');
+                    div.innerHTML = `<div class="cat-header">${g.title}</div><ul>${itemsHtml}</ul>`;
+                    container.appendChild(div);
+                });
+            }
+
+            const ov = document.getElementById('mission-milestones');
+            if (ov) {
+                ov.innerHTML = '';
+                [ 
+                    {id:'procure-list', t:'Procurement', p:'logistics'}, 
+                    {id:'phys-list', t:'Hardware', p:'physical'}, 
+                    {id:'backup-list', t:'Backups', p:'backups'}, 
+                    {id:'exec-list', t:'Execution', p:'software'},
+                    {id:'rebuild-list', t:'Rebuild', p:'rebuild'}
+                ].forEach(m => {
+                    const done = checkSection(m.id);
+                    const card = document.createElement('div');
+                    card.className = `cat-group milestone-link ${done ? 'completed' : ''}`;
+                    card.onclick = () => showPage(m.p);
+                    card.innerHTML = `<div class="cat-header"><input type="checkbox" ${done ? 'checked' : ''} disabled> Milestone: ${m.t}</div><p style="margin:0 0 0 35px; font-size:0.8rem; color:var(--text-muted)">Phase Status: <b>${done ? 'COMPLETE' : 'PENDING'}</b></p>`;
+                    ov.appendChild(card);
+                });
+            }
+
+            const total = Object.values(sections).flatMap(s => s.flatMap(g => g.items)).length;
+            const count = Object.keys(saved).filter(k => saved[k] && k.includes('_i')).length;
+            const pct = total ? Math.round((count/total)*100) : 0;
+            
+            const progressBar = document.getElementById('global-progress');
+            const percentText = document.getElementById('progress-percent');
+            
+            if (progressBar && percentText) {
+                progressBar.style.width = pct + '%';
+                percentText.innerText = pct + '%';
+            }
+
+            // --- 100% Completion Trigger ---
+            if (pct === 100 && !saved.completionTriggered) {
+                saved.completionTriggered = true;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+                
+                // Force play the completion anthem
+                const completionTrack = "System_Status_Hero.mp3";
+                trackIdx = tracks.indexOf(completionTrack);
+                audio.src = completionTrack;
+                updateAudioLabel();
+                audio.play();
+            } else if (pct < 100 && saved.completionTriggered) {
+                // Reset trigger if they uncheck a box
+                saved.completionTriggered = false;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+            }
+
+            document.querySelectorAll('input[type="checkbox"]').forEach(i => {
+                i.onchange = (e) => { saved[e.target.id] = e.target.checked; localStorage.setItem(STORAGE_KEY, JSON.stringify(saved)); renderAll(); };
+            });
+        }
+
+        function showPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.getElementById('nav-' + id).classList.add('active');
+            document.getElementById('info-panel').classList.remove('active');
+            lastTask = null;
+        }
+
+        function loadRuntimeJournalEntries() {
+            try {
+                const parsed = JSON.parse(localStorage.getItem(JOURNAL_RUNTIME_KEY));
+                return Array.isArray(parsed) ? parsed : [];
+            } catch {
+                return [];
+            }
+        }
+
+        function saveRuntimeJournalEntries(entries) {
+            localStorage.setItem(JOURNAL_RUNTIME_KEY, JSON.stringify(entries));
+        }
+
+        function loadUserJournalEntries() {
+            try {
+                const existing = JSON.parse(localStorage.getItem(JOURNAL_KEY));
+                if (Array.isArray(existing) && existing.length) return existing;
+            } catch {}
+
+            // One-time migration attempt from older keys so past notes are not lost.
+            for (const key of LEGACY_JOURNAL_KEYS) {
+                try {
+                    const legacy = JSON.parse(localStorage.getItem(key));
+                    if (Array.isArray(legacy) && legacy.length) {
+                        localStorage.setItem(JOURNAL_KEY, JSON.stringify(legacy));
+                        return legacy;
+                    }
+                } catch {}
+            }
+            return [];
+        }
+
+        /** Optional: from devtools, manifestHubAppendLog('message') or manifestHubAppendLog('message', 'gemini') */
+        window.manifestHubAppendLog = function (text, source) {
+            const t = (text || '').trim();
+            if (!t) return;
+            const src = source === 'gemini' ? 'gemini' : 'cursor';
+            const row = { date: new Date().toLocaleString(), text: t, source: src };
+            const runtime = loadRuntimeJournalEntries();
+            runtime.unshift(row);
+            saveRuntimeJournalEntries(runtime);
+            renderJournal();
+        };
+
+        function renderJournal() {
+            const personalList = document.getElementById('journal-entries');
+            const systemList = document.getElementById('system-entries');
+            if (!personalList) return;
+            personalList.innerHTML = '';
+            if (systemList) systemList.innerHTML = '';
+            const userEntries = loadUserJournalEntries();
+            const runtimeEntries = loadRuntimeJournalEntries();
+
+            const systemNormalized = [
+                ...systemChangelogs.map(e => ({ ...e, logKind: 'gemini' })),
+                ...cursorChangelogs.map(e => ({ ...e, logKind: 'cursor' })),
+                ...runtimeEntries.map(e => ({
+                    date: e.date,
+                    text: e.text,
+                    logKind: e.source === 'gemini' ? 'gemini' : 'cursor',
+                    isPurple: false
+                }))
+            ];
+
+            userEntries.sort((a, b) => new Date(b.date) - new Date(a.date));
+            systemNormalized.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            userEntries.forEach(e => {
+                const div = document.createElement('div');
+                div.className = 'entry-card user-entry';
+                const color = 'var(--accent-blue)';
+                const title = e.date;
+                div.innerHTML = `<span style="color:${color}; font-size:0.8rem; font-weight:bold;">${title}</span><p style="margin:5px 0 0 0">${e.text}</p>`;
+                personalList.appendChild(div);
+            });
+
+            if (userEntries.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'entry-card user-entry';
+                empty.innerHTML = `<span style="color:var(--accent-blue); font-size:0.8rem; font-weight:bold;">No personal notes yet</span><p style="margin:5px 0 0 0">Write one above and click Save Note.</p>`;
+                personalList.appendChild(empty);
+            }
+
+            if (!systemList) return;
+            systemNormalized.forEach(e => {
+                const div = document.createElement('div');
+                let color = e.logKind === 'cursor' ? 'var(--accent-cursor)' : 'var(--accent-red)';
+                div.className = e.logKind === 'cursor' ? 'entry-card cursor-entry' : 'entry-card system-entry';
+                let title = e.logKind === 'cursor' ? `CURSOR UPDATE - ${e.date}` : `GEMINI UPDATE - ${e.date}`;
+
+                if (e.isPurple) {
+                    color = '#bf00ff';
+                    div.className = 'entry-card system-entry';
+                    div.style.borderLeftColor = color;
+                    div.style.background = 'rgba(191, 0, 255, 0.1)';
+                    div.style.boxShadow = '0 0 10px rgba(191, 0, 255, 0.2)';
+                    title = `GEMINI UPDATE - ${e.date}`;
+                }
+
+                div.innerHTML = `<span style="color:${color}; font-size:0.8rem; font-weight:bold;">${title}</span><p style="margin:5px 0 0 0">${e.text}</p>`;
+                systemList.appendChild(div);
+            });
+        }
+
+        function exportOfflineSnapshot() {
+            const payload = {
+                version: SNAPSHOT_VERSION,
+                exportedAt: new Date().toISOString(),
+                storage: JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'),
+                notes: loadUserJournalEntries(),
+                runtimeTimeline: loadRuntimeJournalEntries()
+            };
+
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+            a.href = url;
+            a.download = `missionhub-offline-snapshot-${stamp}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        function importOfflineSnapshot(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const data = JSON.parse(reader.result);
+                    if (!data || typeof data !== 'object') throw new Error('Invalid snapshot');
+
+                    const storage = data.storage && typeof data.storage === 'object' ? data.storage : {};
+                    const notes = Array.isArray(data.notes) ? data.notes : [];
+                    const runtime = Array.isArray(data.runtimeTimeline) ? data.runtimeTimeline : [];
+
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(storage));
+                    localStorage.setItem(JOURNAL_KEY, JSON.stringify(notes));
+                    localStorage.setItem(JOURNAL_RUNTIME_KEY, JSON.stringify(runtime));
+                    renderAll();
+                    renderJournal();
+                    alert('Offline snapshot imported successfully.');
+                } catch (err) {
+                    alert('Snapshot import failed. Please select a valid JSON export from this app.');
+                    console.warn('Snapshot import error:', err);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        const addEntryBtn = document.getElementById('add-entry-btn');
+        if (addEntryBtn) {
+            addEntryBtn.onclick = () => {
+                const input = document.getElementById('journal-input');
+                if (!input.value.trim()) return;
+                const entries = loadUserJournalEntries();
+                entries.unshift({ date: new Date().toLocaleString(), text: input.value.trim() });
+                try {
+                    localStorage.setItem(JOURNAL_KEY, JSON.stringify(entries));
+                } catch (err) {
+                    console.warn('Manifest log: could not persist entry (storage full or disabled).', err);
+                    return;
+                }
+                input.value = '';
+                renderJournal();
+            };
+        }
+
+        const exportBtn = document.getElementById('export-snapshot-btn');
+        const importBtn = document.getElementById('import-snapshot-btn');
+        const snapshotInput = document.getElementById('snapshot-file-input');
+        if (exportBtn) exportBtn.onclick = exportOfflineSnapshot;
+        if (importBtn && snapshotInput) {
+            importBtn.onclick = () => snapshotInput.click();
+            snapshotInput.onchange = (e) => importOfflineSnapshot(e.target.files && e.target.files[0]);
+        }
+
+        renderAll(); renderJournal();
+    </script>
+</body>
+</html>
