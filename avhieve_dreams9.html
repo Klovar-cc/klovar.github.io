@@ -221,6 +221,11 @@
         textarea { width: 100%; min-height: 140px; background: #080c14; color: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 15px; box-sizing: border-box; }
         .action-btn { background: var(--accent-blue-subdue); border: 1px solid var(--accent-blue); color: #fff; padding: 12px 28px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: background 0.2s; }
         .action-btn:hover { background: var(--accent-blue); color: #000; }
+        .action-btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+        .auth-wrap { background: rgba(255, 140, 66, 0.08); border: 1px solid var(--accent-cursor-subdue); border-radius: 10px; padding: 12px; margin-bottom: 14px; }
+        .auth-status { font-size: 0.8rem; color: var(--accent-cursor); margin-bottom: 10px; }
+        .auth-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .auth-row input { background: #080c14; color: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 10px; min-width: 220px; }
         
         /* Journal Entry Cards */
         .entry-card { padding: 20px; border-radius: 8px; margin-top: 20px; }
@@ -399,6 +404,14 @@
                         <button id="import-snapshot-btn" class="action-btn" style="margin-top: 0;">Import Offline Snapshot</button>
                         <input id="snapshot-file-input" type="file" accept="application/json" style="display: none;">
                     </div>
+                    <div class="auth-wrap">
+                        <div id="auth-status" class="auth-status">Cloud sync: local-only mode.</div>
+                        <div class="auth-row">
+                            <input id="auth-email-input" type="email" placeholder="owner@email.com">
+                            <button id="auth-login-btn" class="action-btn" style="margin-top: 0;">Owner Login Link</button>
+                            <button id="auth-logout-btn" class="action-btn" style="margin-top: 0;">Logout</button>
+                        </div>
+                    </div>
                     <textarea id="journal-input" placeholder="Write a personal note..."></textarea>
                     <button id="add-entry-btn" class="action-btn">Save Note</button>
                     <div id="journal-entries" style="margin-top: 30px;"></div>
@@ -424,6 +437,7 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const STORAGE_KEY = 'manifest_tracker_v3';
         const JOURNAL_KEY = 'manifestDreams_journal_entries';
@@ -431,7 +445,132 @@
         /** Append-only system lines (Cursor console, tooling) — survives refresh */
         const JOURNAL_RUNTIME_KEY = 'manifestDreams_journal_runtime';
         const SNAPSHOT_VERSION = 's25-offline-v1';
+        const SUPABASE_URL = ''; // e.g. https://xxxx.supabase.co
+        const SUPABASE_ANON_KEY = ''; // public anon key
+        const SUPABASE_OWNER_EMAIL = ''; // only this email can edit when cloud mode is on
+        const SUPABASE_STATE_TABLE = 'mission_hub_state';
+        const SUPABASE_ROW_ID = 'primary';
         let lastTask = null;
+        let supabaseClient = null;
+        let cloudMode = false;
+        let isOwner = false;
+        let appData = { checklist: {}, notes: [] };
+        let remoteRefreshTimer = null;
+
+        function readLocalChecklist() {
+            try {
+                const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                return parsed && typeof parsed === 'object' ? parsed : {};
+            } catch {
+                return {};
+            }
+        }
+
+        function writeLocalChecklist(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data || {}));
+        }
+
+        function writeLocalNotes(entries) {
+            localStorage.setItem(JOURNAL_KEY, JSON.stringify(Array.isArray(entries) ? entries : []));
+        }
+
+        function canEdit() {
+            return !cloudMode || isOwner;
+        }
+
+        function updateAuthUI(message) {
+            const status = document.getElementById('auth-status');
+            const saveBtn = document.getElementById('add-entry-btn');
+            const noteInput = document.getElementById('journal-input');
+            if (status) status.innerText = message;
+            if (saveBtn) saveBtn.disabled = !canEdit();
+            if (noteInput) noteInput.disabled = !canEdit();
+        }
+
+        async function fetchRemoteState() {
+            if (!supabaseClient) return null;
+            const { data, error } = await supabaseClient
+                .from(SUPABASE_STATE_TABLE)
+                .select('id, checklist, notes, updated_at')
+                .eq('id', SUPABASE_ROW_ID)
+                .maybeSingle();
+            if (error) {
+                console.warn('Cloud fetch failed:', error.message);
+                return null;
+            }
+            if (!data) return null;
+            return {
+                checklist: data.checklist && typeof data.checklist === 'object' ? data.checklist : {},
+                notes: Array.isArray(data.notes) ? data.notes : []
+            };
+        }
+
+        async function saveRemoteState() {
+            if (!supabaseClient || !canEdit()) return;
+            const payload = {
+                id: SUPABASE_ROW_ID,
+                checklist: appData.checklist,
+                notes: appData.notes,
+                updated_at: new Date().toISOString()
+            };
+            const { error } = await supabaseClient.from(SUPABASE_STATE_TABLE).upsert(payload);
+            if (error) console.warn('Cloud save failed:', error.message);
+        }
+
+        async function refreshFromRemoteIfChanged() {
+            if (!supabaseClient) return;
+            const remote = await fetchRemoteState();
+            if (!remote) return;
+            const currentSig = JSON.stringify(appData);
+            const remoteSig = JSON.stringify(remote);
+            if (currentSig !== remoteSig) {
+                appData = remote;
+                writeLocalChecklist(appData.checklist);
+                writeLocalNotes(appData.notes);
+                renderAll();
+                renderJournal();
+            }
+        }
+
+        async function initCloudMode() {
+            const hasConfig = SUPABASE_URL.trim() && SUPABASE_ANON_KEY.trim();
+            if (!hasConfig || !window.supabase || !window.supabase.createClient) {
+                appData.checklist = readLocalChecklist();
+                appData.notes = loadUserJournalEntriesLocal();
+                updateAuthUI('Cloud sync: local-only mode.');
+                return;
+            }
+
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            cloudMode = true;
+
+            const { data: authData } = await supabaseClient.auth.getUser();
+            const email = authData?.user?.email || '';
+            isOwner = !!email && !!SUPABASE_OWNER_EMAIL && email.toLowerCase() === SUPABASE_OWNER_EMAIL.toLowerCase();
+
+            const remote = await fetchRemoteState();
+            if (remote) {
+                appData = remote;
+            } else {
+                appData.checklist = readLocalChecklist();
+                appData.notes = loadUserJournalEntriesLocal();
+                if (isOwner) await saveRemoteState();
+            }
+
+            writeLocalChecklist(appData.checklist);
+            writeLocalNotes(appData.notes);
+
+            if (isOwner) {
+                updateAuthUI(`Cloud sync: owner mode (${email})`);
+            } else if (email) {
+                updateAuthUI(`Cloud sync: read-only (${email})`);
+            } else {
+                updateAuthUI('Cloud sync: read-only public mode.');
+            }
+
+            if (remoteRefreshTimer) clearInterval(remoteRefreshTimer);
+            remoteRefreshTimer = setInterval(refreshFromRemoteIfChanged, 15000);
+        }
 
         // --- GEMINI SYSTEM UPDATE LOGS ---
         const systemChangelogs = [
@@ -591,25 +730,13 @@
         }
 
         function checkSection(id) {
-            let saved = {};
-            try {
-                const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
-                saved = parsed && typeof parsed === 'object' ? parsed : {};
-            } catch {
-                saved = {};
-            }
+            const saved = appData.checklist || {};
             const items = sections[id].flatMap((g, gIdx) => g.items.map((_, iIdx) => `${id}_g${gIdx}_i${iIdx}`));
             return items.length > 0 && items.every(id => saved[id]);
         }
 
         function renderAll() {
-            let saved = {};
-            try {
-                const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
-                saved = parsed && typeof parsed === 'object' ? parsed : {};
-            } catch {
-                saved = {};
-            }
+            const saved = appData.checklist || {};
             for (const [id, groups] of Object.entries(sections)) {
                 const container = document.getElementById(id);
                 if(!container) continue; container.innerHTML = '';
@@ -620,7 +747,7 @@
                     const itemsHtml = g.items.map((item, iIdx) => {
                         const iID = `${id}_g${gIdx}_i${iIdx}`;
                         if(saved[iID]) checked++;
-                        return `<li><input type="checkbox" id="${iID}" ${saved[iID] ? 'checked' : ''}><span class="task-text" onclick="toggleProtocol('${item}')">${item}</span></li>`;
+                        return `<li><input type="checkbox" id="${iID}" ${saved[iID] ? 'checked' : ''} ${!canEdit() ? 'disabled' : ''}><span class="task-text" onclick="toggleProtocol('${item}')">${item}</span></li>`;
                     }).join('');
                     if(checked === g.items.length) div.classList.add('completed');
                     div.innerHTML = `<div class="cat-header">${g.title}</div><ul>${itemsHtml}</ul>`;
@@ -662,7 +789,8 @@
             // --- 100% Completion Trigger ---
             if (pct === 100 && !saved.completionTriggered) {
                 saved.completionTriggered = true;
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+                appData.checklist = saved;
+                writeLocalChecklist(saved);
                 
                 // Force play the completion anthem
                 const completionTrack = "System_Status_Hero.mp3";
@@ -673,11 +801,22 @@
             } else if (pct < 100 && saved.completionTriggered) {
                 // Reset trigger if they uncheck a box
                 saved.completionTriggered = false;
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+                appData.checklist = saved;
+                writeLocalChecklist(saved);
             }
 
             document.querySelectorAll('input[type="checkbox"]').forEach(i => {
-                i.onchange = (e) => { saved[e.target.id] = e.target.checked; localStorage.setItem(STORAGE_KEY, JSON.stringify(saved)); renderAll(); };
+                i.onchange = async (e) => {
+                    if (!canEdit()) {
+                        e.target.checked = !!saved[e.target.id];
+                        return;
+                    }
+                    saved[e.target.id] = e.target.checked;
+                    appData.checklist = saved;
+                    writeLocalChecklist(saved);
+                    if (cloudMode) await saveRemoteState();
+                    renderAll();
+                };
             });
         }
 
@@ -703,7 +842,7 @@
             localStorage.setItem(JOURNAL_RUNTIME_KEY, JSON.stringify(entries));
         }
 
-        function loadUserJournalEntries() {
+        function loadUserJournalEntriesLocal() {
             try {
                 const existing = JSON.parse(localStorage.getItem(JOURNAL_KEY));
                 if (Array.isArray(existing) && existing.length) return existing;
@@ -720,6 +859,11 @@
                 } catch {}
             }
             return [];
+        }
+
+        function loadUserJournalEntries() {
+            if (Array.isArray(appData.notes) && appData.notes.length) return [...appData.notes];
+            return loadUserJournalEntriesLocal();
         }
 
         /** Optional: from devtools, manifestHubAppendLog('message') or manifestHubAppendLog('message', 'gemini') */
@@ -798,8 +942,8 @@
             const payload = {
                 version: SNAPSHOT_VERSION,
                 exportedAt: new Date().toISOString(),
-                storage: JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'),
-                notes: loadUserJournalEntries(),
+                storage: appData.checklist || {},
+                notes: appData.notes || [],
                 runtimeTimeline: loadRuntimeJournalEntries()
             };
 
@@ -827,9 +971,12 @@
                     const notes = Array.isArray(data.notes) ? data.notes : [];
                     const runtime = Array.isArray(data.runtimeTimeline) ? data.runtimeTimeline : [];
 
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(storage));
-                    localStorage.setItem(JOURNAL_KEY, JSON.stringify(notes));
+                    appData.checklist = storage;
+                    appData.notes = notes;
+                    writeLocalChecklist(storage);
+                    writeLocalNotes(notes);
                     localStorage.setItem(JOURNAL_RUNTIME_KEY, JSON.stringify(runtime));
+                    if (cloudMode && canEdit()) saveRemoteState();
                     renderAll();
                     renderJournal();
                     alert('Offline snapshot imported successfully.');
@@ -843,13 +990,16 @@
 
         const addEntryBtn = document.getElementById('add-entry-btn');
         if (addEntryBtn) {
-            addEntryBtn.onclick = () => {
+            addEntryBtn.onclick = async () => {
+                if (!canEdit()) return alert('Read-only mode: only owner can edit live data.');
                 const input = document.getElementById('journal-input');
                 if (!input.value.trim()) return;
                 const entries = loadUserJournalEntries();
                 entries.unshift({ date: new Date().toLocaleString(), text: input.value.trim() });
                 try {
-                    localStorage.setItem(JOURNAL_KEY, JSON.stringify(entries));
+                    appData.notes = entries;
+                    writeLocalNotes(entries);
+                    if (cloudMode) await saveRemoteState();
                 } catch (err) {
                     console.warn('Manifest log: could not persist entry (storage full or disabled).', err);
                     return;
@@ -868,7 +1018,32 @@
             snapshotInput.onchange = (e) => importOfflineSnapshot(e.target.files && e.target.files[0]);
         }
 
-        renderAll(); renderJournal();
+        const authLoginBtn = document.getElementById('auth-login-btn');
+        const authLogoutBtn = document.getElementById('auth-logout-btn');
+        const authEmailInput = document.getElementById('auth-email-input');
+        if (authLoginBtn) {
+            authLoginBtn.onclick = async () => {
+                if (!supabaseClient) return alert('Cloud mode not configured yet. Add Supabase URL/key in the script first.');
+                const email = (authEmailInput && authEmailInput.value || '').trim();
+                if (!email) return alert('Enter your owner email first.');
+                const { error } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href } });
+                if (error) return alert(`Login link failed: ${error.message}`);
+                alert('Login link sent. Open it on this same device/browser.');
+            };
+        }
+        if (authLogoutBtn) {
+            authLogoutBtn.onclick = async () => {
+                if (!supabaseClient) return;
+                await supabaseClient.auth.signOut();
+                location.reload();
+            };
+        }
+
+        (async function boot() {
+            await initCloudMode();
+            renderAll();
+            renderJournal();
+        })();
     </script>
 </body>
 </html>
