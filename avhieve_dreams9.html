@@ -68,10 +68,68 @@
             animation: pulseGlow 3s infinite;
         }
 
-        audio { 
-            height: 32px; 
-            width: 480px; 
-            filter: invert(100%) hue-rotate(180deg) brightness(0.7) contrast(1.2); 
+        .audio-bar-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 920px;
+        }
+
+        audio {
+            height: 32px;
+            flex: 1 1 220px;
+            min-width: 180px;
+            max-width: 520px;
+            filter: invert(100%) hue-rotate(180deg) brightness(0.7) contrast(1.2);
+        }
+
+        .hub-media-btn {
+            font-family: inherit;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--accent-blue-subdue);
+            background: rgba(0, 224, 255, 0.08);
+            color: var(--accent-blue);
+            cursor: pointer;
+            flex: 0 0 auto;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+        }
+
+        .hub-media-btn:hover {
+            background: rgba(0, 224, 255, 0.18);
+            border-color: var(--accent-blue);
+            color: #fff;
+        }
+
+        .hub-media-btn:active {
+            transform: scale(0.98);
+        }
+
+        .hub-media-actions {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            gap: 8px;
+            flex: 0 0 auto;
+        }
+
+        .section-home-jump {
+            cursor: pointer;
+            width: fit-content;
+            border-bottom: 1px dashed transparent;
+            transition: color 0.15s, border-color 0.15s;
+        }
+
+        .section-home-jump:hover {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue-subdue);
         }
 
         .master-container { display: flex; flex: 1; overflow: hidden; }
@@ -241,7 +299,8 @@
         /* Mobile/tablet layout for Android and narrow screens */
         @media (max-width: 980px) {
             :root {
-                --mobile-instruction-max-h: min(42vh, 280px);
+                /* ~30% of typical portrait viewport height; capped for very tall phones */
+                --mobile-instruction-max-h: min(30vh, 320px);
             }
 
             body {
@@ -264,9 +323,25 @@
                 text-align: center;
             }
 
+            .audio-bar-row {
+                flex-direction: column;
+                width: 100%;
+            }
+
             audio {
-                width: min(100%, 560px);
+                width: 100%;
                 max-width: 100%;
+                flex: 1 1 auto;
+            }
+
+            .hub-media-actions {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .hub-media-actions .hub-media-btn {
+                flex: 1 1 calc(50% - 6px);
+                max-width: 200px;
             }
 
             .master-container {
@@ -383,9 +458,15 @@
 
     <header class="top-audio-bar">
         <span id="audio-status">Initializing Audio...</span>
-        <audio id="dream-audio" controls autoplay>
-            <source src="Pristine_State.mp3" type="audio/mpeg">
-        </audio>
+        <div class="audio-bar-row">
+            <audio id="dream-audio" controls autoplay>
+                <source src="Pristine_State.mp3" type="audio/mpeg">
+            </audio>
+            <div class="hub-media-actions">
+                <button type="button" class="hub-media-btn" id="audio-btn-forward" title="Skip forward 15 seconds">Forward</button>
+                <button type="button" class="hub-media-btn" id="audio-btn-next" title="Next track">Next</button>
+            </div>
+        </div>
     </header>
 
     <div class="master-container">
@@ -414,14 +495,14 @@
                     <div id="mission-milestones"></div>
                 </div>
 
-                <div id="logistics" class="page"><h2>01 Procurement</h2><div id="procure-list"></div></div>
-                <div id="physical" class="page"><h2>02 Hardware</h2><div id="phys-list"></div></div>
-                <div id="backups" class="page"><h2>03 Preservation</h2><div id="backup-list"></div></div>
-                <div id="software" class="page"><h2>04 Execution</h2><div id="exec-list"></div></div>
-                <div id="rebuild" class="page"><h2>05 Rebuild</h2><div id="rebuild-list"></div></div>
+                <div id="logistics" class="page"><h2 class="section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">01 Procurement</h2><div id="procure-list"></div></div>
+                <div id="physical" class="page"><h2 class="section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">02 Hardware</h2><div id="phys-list"></div></div>
+                <div id="backups" class="page"><h2 class="section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">03 Preservation</h2><div id="backup-list"></div></div>
+                <div id="software" class="page"><h2 class="section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">04 Execution</h2><div id="exec-list"></div></div>
+                <div id="rebuild" class="page"><h2 class="section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">05 Rebuild</h2><div id="rebuild-list"></div></div>
                 
                 <div id="visualize" class="page">
-                    <h2>06 Notes Vault</h2>
+                    <h2 class="section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">06 Notes Vault</h2>
                     <div class="mission-block">
                         <h3>Personal Notes</h3>
                         <p>Offline-first for Galaxy S25 Ultra: this page runs without internet, and you can export/import a full local snapshot (tasks + notes + runtime timeline) before any OS wipe.</p>
@@ -712,67 +793,86 @@
         });
         updateAudioLabel();
 
-        // Task title -> short HTML blurb (keys must match section item strings exactly)
+        function skipAudioForward() {
+            try {
+                const dur = audio.duration;
+                const next = audio.currentTime + 15;
+                if (Number.isFinite(dur) && dur > 0) audio.currentTime = Math.max(0, Math.min(dur - 0.05, next));
+                else audio.currentTime = Math.max(0, next);
+            } catch (_) { /* ignore */ }
+        }
+
+        function skipToNextProgramTrack() {
+            trackIdx = getNextShuffleIndex();
+            audio.src = tracks[trackIdx];
+            updateAudioLabel();
+            audio.play().catch(() => {});
+        }
+
+        document.getElementById('audio-btn-forward')?.addEventListener('click', skipAudioForward);
+        document.getElementById('audio-btn-next')?.addEventListener('click', skipToNextProgramTrack);
+
+        // Task title -> HTML blurb (keys must match section item strings exactly)
         const protocols = {
-            "Hard Drive Cage / Steel Bracket Rack": "<p>Assemble the cage; clear 3.5&quot; bays for the RAID move.</p>",
-            "100cm CRJ 15-Pin SATA Power Extension": "<p>Add length so SATA power reaches the new cage without tension.</p>",
-            "120mm USB 5V PC Fan + USB-C Adapter": "<p>Place for intake/exhaust; power via USB-C adapter.</p>",
+            "Hard Drive Cage / Steel Bracket Rack": "<p><b>Do:</b> Bolt the cage to the case frame; torque evenly so the sleds line up.</p><p><b>Check:</b> 3.5&quot; slots line up with planned RAID tray positions before running cables.</p>",
+            "100cm CRJ 15-Pin SATA Power Extension": "<p><b>Do:</b> Route one clean extension from PSU SATA chain to the new cage zone.</p><p><b>Why:</b> Prevents strain and intermittent power from tight bends.</p>",
+            "120mm USB 5V PC Fan + USB-C Adapter": "<p><b>Do:</b> Aim intake/exhaust per your airflow diagram; secure so blades cannot hit wires.</p><p><b>Power:</b> USB-C brick or header adapter — avoid undervoltage on long USB runs.</p>",
 
-            "Replace broken CPU fan": "<p>Swap fan, clean mount, plug into CPU_FAN.</p>",
-            "Re-apply fresh thermal paste (5950X)": "<p>Strip old paste (IPA), pea-size new paste, seat cooler evenly.</p>",
-            "Optimize 6x QL120 Airflow layout": "<p>Front/bottom in, rear/top out; balance pressure.</p>",
-            "Assemble HDD cage / Mount B-Drive Array": "<p>Seat drives, firm SATA data + power.</p>",
-            "Internal SATA/AIO Cable Management": "<p>Route behind tray; tie off slack.</p>",
-            "Desk Deep Clean": "<p>Clear surface, dust, tidy external cables.</p>",
+            "Replace broken CPU fan": "<p><b>Do:</b> Remove old fan, clean cold plate, mount replacement with even pressure.</p><p><b>Wire:</b> CPU_FAN header only; verify RPM in BIOS after boot.</p>",
+            "Re-apply fresh thermal paste (5950X)": "<p><b>Prep:</b> IPA wipe until mirror-clean; let dry.</p><p><b>Apply:</b> Small dot or line per cooler spec; tighten cross-pattern to avoid air pockets.</p>",
+            "Optimize 6x QL120 Airflow layout": "<p><b>Goal:</b> Neutral or slight positive pressure; dust control + GPU thermals.</p><p><b>Tune:</b> Fan curves in BIOS or controller so front/bottom feed cool air, top/rear exhaust heat.</p>",
+            "Assemble HDD cage / Mount B-Drive Array": "<p><b>Do:</b> Click drives fully into sleds; label bays if it helps cable tracing.</p><p><b>Cables:</b> Straight SATA data runs; avoid sharp kinks at connectors.</p>",
+            "Internal SATA/AIO Cable Management": "<p><b>Do:</b> Bundle behind tray with velcro; keep pump/AIO tubes clear of fan blades.</p><p><b>Check:</b> No SATA cables rubbing on GPU backplate when side panel closes.</p>",
+            "Desk Deep Clean": "<p><b>Do:</b> Full wipe-down; vacuum intake filters; reroute loose desk cables.</p><p><b>Exit:</b> Clear workspace for long rebuild sessions.</p>",
 
-            "Radarr/Sonarr Database Exports": "<p>Each app: System → Backup → save ZIP somewhere safe.</p>",
-            "SABnzbd config.ini & Scripts": "<p>Copy SABnzbd admin config.ini plus any custom script folders.</p>",
-            "TDARR Plugin & Node Configs": "<p>Export/copy TDARR JSON configs from install paths.</p>",
-            "Plex Metadata/Watched States": "<p>Back up Plex library DB under AppData (stop Plex first if restoring later).</p>",
-            "qBittorrent .fastresume & Categories": "<p>Copy BT_backup and qBittorrent.ini from LocalAppData.</p>",
-            "Directory Opus .ocfg Export": "<p>Opus: Settings → Backup/Restore → export .ocfg.</p>",
-            "Voicemeeter XML Routing": "<p>Voicemeeter: Save Settings → keep the .xml.</p>",
-            "Synapse 4 Macros & Profiles": "<p>Export Synapse XML profiles for Tartarus/Naga locally.</p>",
-            "Signal Desktop Local Messages": "<p>Use Signal’s backup/export if you rely on local history.</p>",
-            "Resolve Studio PowerBins & LUTs": "<p>Export PowerBins; copy your LUT folder from ProgramData.</p>",
-            "MusicBee Backup (Library & AppData)": "<p>MusicBee library backup to disk, or copy .mbl + AppData MusicBee.</p>",
-            "Cursor App & Settings Backup": "<p>Copy Cursor User + globalStorage and .cursor folder to backup media.</p>",
-            "DisplayFusion License Unhooking": "<p>Save license key; deactivate this PC in Binary Fortress account.</p>",
-            "Camo Studio License Unhooking": "<p>Sign out / deactivate device in Camo to free the seat.</p>",
-            "Voicemeeter License Ledger Backup": "<p>Store license code + transaction ID for REGEN after reinstall.</p>",
-            "Transfer B: Drive Files + New RAID Prep": "<p>Move B: data off to verified storage; new RAID step wipes B:.</p>",
+            "Radarr/Sonarr Database Exports": "<p><b>Each app:</b> System → Backup → download ZIP to verified storage.</p><p><b>Note:</b> Keep version notes so you know which export matches which OS snapshot.</p>",
+            "SABnzbd config.ini & Scripts": "<p><b>Copy:</b> Admin <code>config.ini</code> plus any post-processing script folders you rely on.</p><p><b>Verify:</b> Categories and script paths match what you will restore later.</p>",
+            "TDARR Plugin & Node Configs": "<p><b>Copy:</b> TDARR JSON stacks, node configs, and custom plugin folders from install roots.</p><p><b>Tip:</b> Export a screenshot of the web UI stacks for sanity checking after restore.</p>",
+            "Plex Metadata/Watched States": "<p><b>Do:</b> Stop Plex service, copy library DB bundle from AppData Databases.</p><p><b>Why:</b> Watched state lives in DB; backing up while running risks corruption.</p>",
+            "qBittorrent .fastresume & Categories": "<p><b>Copy:</b> <code>BT_backup</code> folder + <code>qBittorrent.ini</code> from LocalAppData.</p><p><b>Check:</b> Category save paths still valid on new install drive letters.</p>",
+            "Directory Opus .ocfg Export": "<p><b>Do:</b> Settings → Backup and Restore → export <code>.ocfg</code> to backup disk.</p><p><b>Include:</b> Any custom script/button banks referenced by your layout.</p>",
+            "Voicemeeter XML Routing": "<p><b>Do:</b> Menu → Save Settings → store named <code>.xml</code> with date stamp.</p><p><b>Check:</b> Hardware I/O device names match what you expect after reinstall.</p>",
+            "Synapse 4 Macros & Profiles": "<p><b>Do:</b> Export Tartarus/Naga profiles and macro XML to a known folder.</p><p><b>Tip:</b> Note Synapse version; major upgrades sometimes need re-import tweaks.</p>",
+            "Signal Desktop Local Messages": "<p><b>Do:</b> Use Signal’s local backup flow if you depend on desktop history.</p><p><b>Plan:</b> You may need to relink device after OS rebuild — keep recovery codes safe.</p>",
+            "Resolve Studio PowerBins & LUTs": "<p><b>Do:</b> Export PowerBins from Media Pool; copy LUT tree from ProgramData Blackmagic path.</p><p><b>Check:</b> Relative paths inside projects still resolve on restored drive letters.</p>",
+            "MusicBee Backup (Library & AppData)": "<p><b>Preferred:</b> MusicBee → Library → Backup Library to disk.</p><p><b>Alt:</b> Copy <code>.mbl</code> + AppData MusicBee folder with the same relative structure.</p>",
+            "Cursor App & Settings Backup": "<p><b>Copy:</b> <code>%APPDATA%\\Cursor\\User</code>, <code>globalStorage</code>, and <code>%USERPROFILE%\\.cursor</code>.</p><p><b>Why:</b> Restores settings, rules, skills, and workspace metadata in one pass.</p>",
+            "DisplayFusion License Unhooking": "<p><b>Save:</b> License key to your backup text file.</p><p><b>Unhook:</b> Binary Fortress account → remove this PC so the seat frees before rebuild.</p>",
+            "Camo Studio License Unhooking": "<p><b>Do:</b> Sign out / deactivate this device inside Camo license UI.</p><p><b>Verify:</b> Account shows one fewer active device.</p>",
+            "Voicemeeter License Ledger Backup": "<p><b>Save:</b> License code + transaction ID to offline backup.</p><p><b>Critical:</b> Needed for <code>REGEN</code> with the new Windows challenge string after wipe.</p>",
+            "Transfer B: Drive Files + New RAID Prep": "<p><b>Do:</b> Copy everything you need off <code>B:</code>; verify checksums or spot-test archives.</p><p><b>Next:</b> Creating RAID0 will destroy prior metadata — treat this as a hard boundary.</p>",
 
-            "Decryption Check (16TB RAID 10)": "<p>Confirm BitLocker/encryption off on B: before wipe.</p>",
-            "Rufus Build: No-Cloud/No-BitLocker": "<p>Rufus: use your ISO; enable no-cloud / no-BitLocker options as planned.</p>",
-            "Confirm English-Only Profile Paths": "<p>OOBE English (US); remove stray localized profile folders if any.</p>",
-            "Create New RAID 0 Array (B: Build Step)": "<p>RAID BIOS/utility: new RAID0 on target disks (destroys data).</p>",
+            "Decryption Check (16TB RAID 10)": "<p><b>Blocker check:</b> Suspend BitLocker / other full-disk crypto on the B array before wipe.</p><p><b>Why:</b> Prevents irrecoverable volumes if keys or protectors are lost mid-migration.</p>",
+            "Rufus Build: No-Cloud/No-BitLocker": "<p><b>Do:</b> Flash ISO with Rufus; tick your offline-first toggles (no MS account, no BitLocker).</p><p><b>Keep:</b> ISO hash verified; store Rufus log if you like audit trails.</p>",
+            "Confirm English-Only Profile Paths": "<p><b>OOBE:</b> English (US) region + keyboard to avoid localized profile folders.</p><p><b>Clean-up:</b> Remove stray localized shells (example: stray Desktop.ini folders) if Windows creates them.</p>",
+            "Create New RAID 0 Array (B: Build Step)": "<p><b>Do:</b> In RAID/UEFI utility, create RAID0 on the intended disks — <b>destructive</b>.</p><p><b>Verify:</b> Array visible in BIOS and Windows installer / Disk Management before OS install.</p>",
 
-            "Run BCU (Bulk Crap Uninstaller)": "<p>BCU: remove bloat, telemetry, OneDrive as per your list.</p>",
-            "Mount Synology NAS Drives": "<p>Map P/W/X/Y/Z via Synology Assistant to NAS paths.</p>",
-            "Install Meta Quest Link": "<p>Install Quest Link for PCVR.</p>",
-            "Custom 'Ninite' Bulk Install": "<p>Batch install your core browser/game/social apps.</p>",
-            "Media & Viewing Suite": "<p>VLC, SVP, IrfanView, Calibre — your media stack.</p>",
-            "Power User Utilities": "<p>Everything, Opus, DisplayFusion, TeraCopy, WizTree, etc.</p>",
-            "Initialize & Validate RAID 0 Volume (Post-Build)": "<p>Disk Management: init, letter, quick test, then use B: normally.</p>",
-            "Restoration Protocol: Keep Same Folder Layout": "<p>Restore files to the same paths as before so apps still resolve.</p>",
-            "Restore Core App Configs (Priority Order)": "<p>Restore download stack first, then media apps, then peripherals/creative.</p>",
-            "Restore Validation Sweep": "<p>Smoke-test each app: paths, queues, one real workflow each.</p>",
+            "Run BCU (Bulk Crap Uninstaller)": "<p><b>Do:</b> Uninstall OEM bundles, telemetry, and OneDrive per your BCU preset.</p><p><b>After:</b> Reboot once; confirm network stack still behaves before heavy installs.</p>",
+            "Mount Synology NAS Drives": "<p><b>Do:</b> Synology Assistant → map P/W/X/Y/Z to the correct shares.</p><p><b>Check:</b> Reconnect at login if needed; test read/write with a dummy file per drive.</p>",
+            "Install Meta Quest Link": "<p><b>Do:</b> Install Oculus/Meta PC software + USB drivers for Quest Link.</p><p><b>Test:</b> Cable detection + bitrate headroom before long VR sessions.</p>",
+            "Custom 'Ninite' Bulk Install": "<p><b>Do:</b> Run your curated installer batch (browsers, launchers, chat).</p><p><b>Tip:</b> Install offline-capable redistributables (VC++/.NET) if your game stack needs them.</p>",
+            "Media & Viewing Suite": "<p><b>Stack:</b> VLC, SVP, IrfanView, Calibre — tune file associations once.</p><p><b>Check:</b> GPU decode paths for HDR/HEVC if you use them daily.</p>",
+            "Power User Utilities": "<p><b>Stack:</b> Everything, Opus, DisplayFusion, TeraCopy, WizTree.</p><p><b>Tip:</b> Export Opus + DisplayFusion configs right after install while defaults are fresh.</p>",
+            "Initialize & Validate RAID 0 Volume (Post-Build)": "<p><b>DiskMgmt:</b> Initialize, format NTFS, assign <code>B:</code> (or final letter), quick SMART glance.</p><p><b>Sanity:</b> Copy a large test file in/out to confirm sustained speed and no thermal throttle.</p>",
+            "Restoration Protocol: Keep Same Folder Layout": "<p><b>Rule:</b> Restore media, watch folders, and configs to the <em>same</em> absolute or relative paths.</p><p><b>Why:</b> Automation and libraries break silently when roots move.</p>",
+            "Restore Core App Configs (Priority Order)": "<p><b>Order:</b> Download clients → *arr suite → Plex → transcode stack → audio/peripherals → creative → Cursor.</p><p><b>Rule:</b> Launch each once before importing dependents so paths register cleanly.</p>",
+            "Restore Validation Sweep": "<p><b>Do:</b> Per app: open, run one real job, confirm logs show no path errors.</p><p><b>Exit:</b> Mapped drives + firewall rules + scheduled tasks all alive.</p>",
 
-            "Restore Radarr/Sonarr Databases (same folders)": "<p>Import ZIP backups; same root/download paths.</p>",
-            "Restore SABnzbd config.ini & Scripts (same folders)": "<p>Drop config + scripts back; test one category.</p>",
-            "Restore TDARR Plugin & Node Configs (same folders)": "<p>Copy JSON back; confirm node + stacks load.</p>",
-            "Restore Plex Metadata/Watched States (same folders)": "<p>Stop Plex, restore DB bundle, start; libraries unchanged.</p>",
-            "Restore qBittorrent .fastresume & Categories (same folders)": "<p>Restore BT_backup + ini; confirm resume + categories.</p>",
-            "Restore Directory Opus .ocfg Profile": "<p>Import .ocfg; check layouts and buttons.</p>",
-            "Restore Synapse 4 Macros & Profiles": "<p>Import XML; test macro keys.</p>",
-            "Restore Voicemeeter XML Routing": "<p>Load XML; quick route/mic sanity check.</p>",
-            "Restore Signal Desktop Local Data": "<p>Restore backup if used; complete relink if asked.</p>",
-            "Restore Resolve Studio PowerBins & LUTs": "<p>Import bins + LUTs; open a test project.</p>",
-            "Restore MusicBee Library & AppData (same folders)": "<p>Import backup or copy library files back.</p>",
-            "Restore Cursor App & Settings (same folders)": "<p>Copy User, globalStorage, .cursor back; restart Cursor.</p>",
-            "Restore DisplayFusion License": "<p>Enter saved key; confirm activated.</p>",
-            "Restore Camo Studio License": "<p>Sign in; confirm premium on this device.</p>",
-            "Restore Voicemeeter License (REGEN)": "<p>REGEN with saved codes + new challenge response.</p>"
+            "Restore Radarr/Sonarr Databases (same folders)": "<p><b>Do:</b> Import backup ZIPs through each app’s restore UI.</p><p><b>Match:</b> Root folders + download client labels identical to pre-wipe naming.</p>",
+            "Restore SABnzbd config.ini & Scripts (same folders)": "<p><b>Do:</b> Restore <code>config.ini</code> + scripts into original AppData paths.</p><p><b>Test:</b> Fire a small category job to confirm post-processing hooks run.</p>",
+            "Restore TDARR Plugin & Node Configs (same folders)": "<p><b>Do:</b> Copy JSON + plugin dirs back; start node service.</p><p><b>Check:</b> Plugin stack names resolve; no red missing-file icons in UI.</p>",
+            "Restore Plex Metadata/Watched States (same folders)": "<p><b>Do:</b> Stop Plex → replace DB/metadata bundle → start Plex.</p><p><b>Verify:</b> Libraries scan clean; watch states and collections intact.</p>",
+            "Restore qBittorrent .fastresume & Categories (same folders)": "<p><b>Do:</b> Restore <code>BT_backup</code> + <code>qBittorrent.ini</code> to LocalAppData.</p><p><b>Check:</b> Torrents resume; category paths map to correct final folders.</p>",
+            "Restore Directory Opus .ocfg Profile": "<p><b>Do:</b> Import <code>.ocfg</code> via Backup/Restore dialog.</p><p><b>Spot-check:</b> Dual pane layout, toolbar buttons, and file type events.</p>",
+            "Restore Synapse 4 Macros & Profiles": "<p><b>Do:</b> Import device XML profiles; let Synapse restart services.</p><p><b>Test:</b> Layer switch + one macro per device.</p>",
+            "Restore Voicemeeter XML Routing": "<p><b>Do:</b> Load XML profile; reboot audio engine if strips look blank.</p><p><b>Test:</b> Playback + mic monitor path with quick level sweep.</p>",
+            "Restore Signal Desktop Local Data": "<p><b>Do:</b> Restore backup folder if you use local history; follow relink prompts.</p><p><b>Check:</b> Message search returns expected threads.</p>",
+            "Restore Resolve Studio PowerBins & LUTs": "<p><b>Do:</b> Import PowerBins; copy LUT directory to Resolve’s LUT path.</p><p><b>Test:</b> Open grading project; thumbnails and nodes resolve.</p>",
+            "Restore MusicBee Library & AppData (same folders)": "<p><b>Do:</b> Import MusicBee backup wizard <em>or</em> drop library + AppData back.</p><p><b>Check:</b> Library scan finds same drive letters; playlists intact.</p>",
+            "Restore Cursor App & Settings (same folders)": "<p><b>Do:</b> Merge folders back; overwrite newer empty profiles if prompted.</p><p><b>Restart:</b> Full quit Cursor before copying live DB files if extensions were running.</p>",
+            "Restore DisplayFusion License": "<p><b>Do:</b> Paste saved key; online activate once network is stable.</p><p><b>Verify:</b> Tray icon shows Pro; monitor splits load.</p>",
+            "Restore Camo Studio License": "<p><b>Do:</b> Sign into licensed account on fresh OS.</p><p><b>Verify:</b> Premium toggles unlocked; device seat shows active.</p>",
+            "Restore Voicemeeter License (REGEN)": "<p><b>Do:</b> Enter saved license + transaction ID → run <code>REGEN</code> with new challenge code.</p><p><b>Done when:</b> No trial watermark; all buses licensed.</p>"
         };
 
         const sections = {
