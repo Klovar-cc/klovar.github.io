@@ -28,9 +28,15 @@
             color: var(--text-main);
             font-family: 'Segoe UI', system-ui, sans-serif;
             margin: 0;
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: var(--nav-width) 1fr;
+            grid-template-rows: auto 1fr auto;
+            grid-template-areas:
+                "hubhead hubhead"
+                "hubnav  hubmain"
+                "hubfoot hubfoot";
             height: 100vh;
+            min-height: 0;
             background-image: url('Pristine State.jpg');
             background-size: cover;
             background-attachment: fixed;
@@ -39,7 +45,13 @@
             overflow: hidden;
         }
 
+        /** Wraps header + nav so mobile can sticky-pin both under one top bar. */
+        .hub-top-cluster {
+            display: contents;
+        }
+
         .top-audio-bar {
+            grid-area: hubhead;
             height: var(--top-bar-height);
             background: rgba(10, 17, 30, 0.98);
             border-bottom: 2px solid var(--accent-blue-subdue);
@@ -190,15 +202,27 @@
             border-bottom-color: var(--accent-blue-subdue);
         }
 
-        .master-container { display: flex; flex: 1; overflow: hidden; }
+        .master-container {
+            grid-area: hubmain;
+            display: flex;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        footer.bottom-progress-bar {
+            grid-area: hubfoot;
+        }
 
         nav {
+            grid-area: hubnav;
             width: var(--nav-width);
             background: rgba(10, 17, 30, 0.85);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             padding: 20px 0 0 0;
+            min-height: 0;
         }
 
         .nav-btn {
@@ -469,13 +493,32 @@
                 min-height: 100vh;
                 overflow: auto;
                 background-attachment: scroll;
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto;
+                grid-template-areas:
+                    "hubstack"
+                    "hubmain"
+                    "hubfoot";
+            }
+
+            .hub-top-cluster {
+                display: flex;
+                flex-direction: column;
+                grid-area: hubstack;
+                position: sticky;
+                top: 0;
+                z-index: 120;
+                background: rgba(10, 17, 30, 0.98);
+                backdrop-filter: blur(15px);
+                border-bottom: 2px solid var(--accent-blue-subdue);
             }
 
             .top-audio-bar {
                 height: auto;
                 padding: 10px 12px;
-                position: sticky;
-                top: 0;
+                position: static;
+                grid-area: unset;
+                border-bottom: 1px solid var(--border);
             }
 
             #audio-status {
@@ -505,17 +548,19 @@
             }
 
             .master-container {
+                grid-area: hubmain;
                 flex-direction: column;
                 overflow: visible;
             }
 
             nav {
+                grid-area: unset;
                 width: 100%;
                 flex-direction: row;
                 overflow-x: auto;
                 overflow-y: hidden;
                 border-right: none;
-                border-bottom: 1px solid var(--border);
+                border-bottom: none;
                 padding: 0;
                 scrollbar-width: thin;
             }
@@ -616,23 +661,23 @@
 </head>
 <body>
 
-    <header class="top-audio-bar">
-        <div class="hub-status-wrap">
-            <span id="audio-status" class="hub-shimmer-text">Initializing Audio...</span>
-        </div>
-        <div class="audio-bar-row">
-            <audio id="dream-audio" controls autoplay>
-                <source src="Pristine_State.mp3" type="audio/mpeg">
-            </audio>
-            <div class="hub-media-actions">
-                <button type="button" class="hub-media-btn" id="audio-btn-prev" title="Previous track">Prev</button>
-                <button type="button" class="hub-media-btn" id="audio-btn-pause" title="Pause or resume playback">Pause</button>
-                <button type="button" class="hub-media-btn" id="audio-btn-next" title="Next track">Next</button>
+    <div class="hub-top-cluster">
+        <header class="top-audio-bar">
+            <div class="hub-status-wrap">
+                <span id="audio-status" class="hub-shimmer-text">Initializing Audio...</span>
             </div>
-        </div>
-    </header>
+            <div class="audio-bar-row">
+                <audio id="dream-audio" controls autoplay>
+                    <source src="Pristine_State.mp3" type="audio/mpeg">
+                </audio>
+                <div class="hub-media-actions">
+                    <button type="button" class="hub-media-btn" id="audio-btn-prev" title="Previous track">Prev</button>
+                    <button type="button" class="hub-media-btn" id="audio-btn-pause" title="Pause or resume playback">Pause</button>
+                    <button type="button" class="hub-media-btn" id="audio-btn-next" title="Next track">Next</button>
+                </div>
+            </div>
+        </header>
 
-    <div class="master-container">
         <nav>
             <button id="nav-overview" class="nav-btn active" onclick="showPage('overview')">00 Launchpad</button>
             <button id="nav-logistics" class="nav-btn" onclick="showPage('logistics')">01 Procurement</button>
@@ -642,7 +687,9 @@
             <button id="nav-rebuild" class="nav-btn" onclick="showPage('rebuild')">05 Rebuild</button>
             <button id="nav-visualize" class="nav-btn" onclick="showPage('visualize')">06 Notes Vault</button>
         </nav>
+    </div>
 
+    <div class="master-container">
         <div class="main-content">
             <main class="content-area">
                 <div id="overview" class="page active">
