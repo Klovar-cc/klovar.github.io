@@ -296,6 +296,47 @@
         .system-entry { background: var(--accent-red-subdue); border-left: 4px solid var(--accent-red); }
         .cursor-entry { background: var(--accent-cursor-subdue); border-left: 4px solid var(--accent-cursor); }
 
+        .site-build-log-block {
+            border-color: rgba(255, 140, 66, 0.55);
+            background: rgba(255, 140, 66, 0.07);
+        }
+
+        .site-build-log-block h3 {
+            color: var(--accent-cursor);
+        }
+
+        .site-build-entry {
+            margin-top: 14px;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-cursor);
+            background: rgba(10, 14, 24, 0.65);
+        }
+
+        .site-build-entry .sb-meta {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--accent-cursor);
+            margin-bottom: 6px;
+        }
+
+        .site-build-entry .sb-line {
+            margin: 0;
+            font-size: 0.92rem;
+            line-height: 1.45;
+            color: var(--text-main);
+        }
+
+        .site-build-entry .sb-src {
+            display: inline-block;
+            margin-top: 6px;
+            font-size: 0.68rem;
+            color: #fbbf24;
+            opacity: 0.9;
+        }
+
         /* Mobile/tablet layout for Android and narrow screens */
         @media (max-width: 980px) {
             :root {
@@ -340,8 +381,8 @@
             }
 
             .hub-media-actions .hub-media-btn {
-                flex: 1 1 calc(50% - 6px);
-                max-width: 200px;
+                flex: 1 1 calc(33.33% - 6px);
+                max-width: 160px;
             }
 
             .master-container {
@@ -463,6 +504,7 @@
                 <source src="Pristine_State.mp3" type="audio/mpeg">
             </audio>
             <div class="hub-media-actions">
+                <button type="button" class="hub-media-btn" id="audio-btn-prev" title="Previous track">Prev</button>
                 <button type="button" class="hub-media-btn" id="audio-btn-forward" title="Skip forward 15 seconds">Forward</button>
                 <button type="button" class="hub-media-btn" id="audio-btn-next" title="Next track">Next</button>
             </div>
@@ -506,6 +548,11 @@
                     <div class="mission-block">
                         <h3>Personal Notes</h3>
                         <p>Offline-first for Galaxy S25 Ultra: this page runs without internet, and you can export/import a full local snapshot (tasks + notes + runtime timeline) before any OS wipe.</p>
+                    </div>
+                    <div class="mission-block site-build-log-block">
+                        <h3>Site build changelog</h3>
+                        <p style="margin-top:0;color:var(--text-muted);font-size:0.88rem;">Every deploy and Cursor pass: one line each, newest first.</p>
+                        <div id="site-build-log-entries"></div>
                     </div>
                     <div id="auth-wrap" class="auth-wrap">
                         <div id="auth-status" class="auth-status">Cloud sync: local-only mode.</div>
@@ -751,6 +798,8 @@
         let trackIdx = 0;
         let shufflePool = [];
         let completionPlayedThisSession = false;
+        /** Stack of playlist indices before each automatic or manual advance (for Prev). */
+        let playlistHistory = [];
         const audio = document.getElementById('dream-audio');
         
         function updateAudioLabel() {
@@ -776,9 +825,41 @@
             return shufflePool.pop();
         }
 
+        function currentSrcFilename() {
+            try {
+                const u = audio.currentSrc || audio.src || '';
+                return decodeURIComponent(u.split('/').pop().split('?')[0] || '');
+            } catch (_) {
+                return '';
+            }
+        }
+
+        function pushPlaylistHistory() {
+            playlistHistory.push(trackIdx);
+            if (playlistHistory.length > 48) playlistHistory.shift();
+        }
+
+        function snapTrackIdxFromSrc() {
+            const file = currentSrcFilename();
+            const i = tracks.indexOf(file);
+            if (i >= 0) trackIdx = i;
+        }
+
+        function advanceToNextShuffledTrack() {
+            snapTrackIdxFromSrc();
+            const file = currentSrcFilename();
+            if (tracks.includes(file)) pushPlaylistHistory();
+            trackIdx = getNextShuffleIndex();
+            audio.src = tracks[trackIdx];
+            updateAudioLabel();
+        }
+
         function playCompletionAnthemOnce() {
             if (completionPlayedThisSession) return;
             completionPlayedThisSession = true;
+            snapTrackIdxFromSrc();
+            const file = currentSrcFilename();
+            if (tracks.includes(file)) pushPlaylistHistory();
             const completionTrack = "System_Status_Hero.mp3";
             audio.src = completionTrack;
             document.getElementById('audio-status').innerText = "HUB ACTIVE: System Status Hero";
@@ -786,9 +867,7 @@
         }
 
         audio.addEventListener('ended', () => {
-            trackIdx = getNextShuffleIndex();
-            audio.src = tracks[trackIdx];
-            updateAudioLabel();
+            advanceToNextShuffledTrack();
             audio.play();
         });
         updateAudioLabel();
@@ -803,12 +882,33 @@
         }
 
         function skipToNextProgramTrack() {
-            trackIdx = getNextShuffleIndex();
+            advanceToNextShuffledTrack();
+            audio.play().catch(() => {});
+        }
+
+        function skipToPreviousProgramTrack() {
+            const file = currentSrcFilename();
+            if (file === "System_Status_Hero.mp3" && playlistHistory.length > 0) {
+                trackIdx = playlistHistory.pop();
+                audio.src = tracks[trackIdx];
+                updateAudioLabel();
+                audio.play().catch(() => {});
+                return;
+            }
+            if (playlistHistory.length > 0) {
+                trackIdx = playlistHistory.pop();
+                audio.src = tracks[trackIdx];
+                updateAudioLabel();
+                audio.play().catch(() => {});
+                return;
+            }
+            trackIdx = (trackIdx - 1 + tracks.length) % tracks.length;
             audio.src = tracks[trackIdx];
             updateAudioLabel();
             audio.play().catch(() => {});
         }
 
+        document.getElementById('audio-btn-prev')?.addEventListener('click', skipToPreviousProgramTrack);
         document.getElementById('audio-btn-forward')?.addEventListener('click', skipAudioForward);
         document.getElementById('audio-btn-next')?.addEventListener('click', skipToNextProgramTrack);
 
@@ -894,6 +994,52 @@
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;');
+        }
+
+        /** Newest-first sort key in `iso`; shown labels in `display`. */
+        const siteBuildChangelog = [
+            { iso: "2026-04-16T23:30:00Z", display: "4/16/2026 — evening", source: "Cursor + deploy", text: "Added Prev track control with shuffle history and an orange Site build changelog block in Notes Vault." },
+            { iso: "2026-04-16T22:00:00Z", display: "4/16/2026 — PM", source: "Cursor + deploy", text: "Media bar: Forward (+15s) and Next; section h2 titles jump to Launchpad; protocols expanded; mobile instruction sheet height set to ~30vh." },
+            { iso: "2026-04-16T20:30:00Z", display: "4/16/2026 — PM", source: "Cursor + deploy", text: "Fixed task protocol clicks for names with quotes or ampersands; rewrote protocol blurbs into structured short sections." },
+            { iso: "2026-04-16T19:00:00Z", display: "4/16/2026 — PM", source: "Cursor + deploy", text: "Pinned the instruction panel above the footer on narrow screens so long pages do not hide protocols." },
+            { iso: "2026-04-16T18:00:00Z", display: "4/16/2026 — PM", source: "Cursor + deploy", text: "Simplified Launchpad End-State copy to only read \"better PC\"." },
+            { iso: "2026-04-16T17:00:00Z", display: "4/16/2026 — PM", source: "GitHub Pages", text: "Restored live Mission Hub on klovar.cc from archived tag after a brief blank-starter experiment on main." },
+            { iso: "2026-04-16T16:00:00Z", display: "4/16/2026 — PM", source: "Cursor + deploy", text: "Replaced the live site root with a minimal placeholder index while keeping CNAME and .nojekyll (later reverted)." },
+            { iso: "2026-04-16T15:30:00Z", display: "4/16/2026 — PM", source: "Cursor + deploy", text: "Synced anthem and cloud-sync fixes from workspace to the live user-site repo main branch." },
+            { iso: "2026-04-16T14:00:00Z", display: "4/16/2026 — PM", source: "Cursor + deploy", text: "Stopped completion anthem from looping on remote refresh and moved its trigger to explicit checkbox events." },
+            { iso: "2026-04-13T22:52:00Z", display: "4/13/2026, 5:52 PM", source: "Gemini / Cursor", text: "Shipped avhieve_dreams9 with a committed policy to timestamp every future system line in the internal changelog array." },
+            { iso: "2026-04-13T21:45:00Z", display: "4/13/2026, 3:45 PM", source: "Gemini / Cursor", text: "Pointed the 100% completion anthem file to System_Status_Hero.mp3 to match on-disk assets." },
+            { iso: "2026-04-13T21:35:00Z", display: "4/13/2026, 3:35 PM", source: "Gemini / Cursor", text: "Added auto-play celebration when the checklist reaches 100% complete." },
+            { iso: "2026-04-13T21:25:00Z", display: "4/13/2026, 3:25 PM", source: "Gemini / Cursor", text: "Added a one-off purple-accent manifest log entry channel." },
+            { iso: "2026-04-13T21:15:00Z", display: "4/13/2026, 3:15 PM", source: "Gemini / Cursor", text: "Moved global progress into a full-width footer bar mirroring the audio header." },
+            { iso: "2026-04-13T21:00:00Z", display: "4/13/2026, 3:00 PM", source: "Gemini / Cursor", text: "Introduced the 05 Rebuild section, expanded Preservation with MusicBee, and renumbered Notes Vault to 06." },
+            { iso: "2026-04-13T20:10:00Z", display: "4/13/2026, 2:10 PM", source: "Gemini / Cursor", text: "Filled protocol dictionary gaps and applied purged red/cyan styling to completed work." },
+            { iso: "2026-04-13T19:57:00Z", display: "4/13/2026, 1:57 PM", source: "Gemini / Cursor", text: "Replaced static system log with dynamic Gemini-tinted lines inside the journal feed." }
+        ];
+
+        function renderSiteBuildLog() {
+            const root = document.getElementById('site-build-log-entries');
+            if (!root) return;
+            root.innerHTML = "";
+            [...siteBuildChangelog]
+                .sort((a, b) => String(b.iso).localeCompare(String(a.iso)))
+                .forEach((row) => {
+                    const div = document.createElement("div");
+                    div.className = "site-build-entry";
+                    const meta = document.createElement("div");
+                    meta.className = "sb-meta";
+                    meta.textContent = row.display || row.iso;
+                    const p = document.createElement("p");
+                    p.className = "sb-line";
+                    p.textContent = row.text;
+                    const src = document.createElement("span");
+                    src.className = "sb-src";
+                    src.textContent = row.source || "Deploy";
+                    div.appendChild(meta);
+                    div.appendChild(p);
+                    div.appendChild(src);
+                    root.appendChild(div);
+                });
         }
 
         function toggleProtocol(task) {
@@ -1180,6 +1326,7 @@
             await initCloudMode();
             renderAll();
             renderJournal();
+            renderSiteBuildLog();
         })();
     </script>
 </body>
