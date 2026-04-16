@@ -138,33 +138,29 @@
             letter-spacing: 0.06em;
         }
 
-        /** Quiet landing title — no shimmer, sentence case */
-        .page-brief-hero {
-            text-transform: none;
-            letter-spacing: 0.03em;
-            font-weight: 600;
-            font-size: clamp(1.35rem, 2.8vw, 1.75rem);
-            color: var(--text-main);
-        }
-
-        .hub-lede {
+        .mission-tagline {
             width: min(100%, 880px);
-            margin: -0.5rem auto 1.25rem auto;
-            font-size: 0.92rem;
+            margin: -0.85rem auto 1.35rem auto;
+            font-size: 0.95rem;
             color: var(--text-muted);
-            line-height: 1.5;
+            line-height: 1.55;
+            max-width: 38rem;
         }
 
-        .home-actions {
+        .mission-milestones-wrap {
+            margin-top: 0.25rem;
+        }
+
+        .mission-cta-row {
             width: min(100%, 880px);
-            margin: 0 auto;
+            margin: 1.35rem auto 0 auto;
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 10px;
             align-items: center;
         }
 
-        .home-actions .action-btn {
+        .mission-cta-row .action-btn {
             margin-top: 0;
         }
 
@@ -780,8 +776,7 @@
         </header>
 
         <nav>
-            <button id="nav-home" class="nav-btn active" onclick="showPage('home')">Brief</button>
-            <button id="nav-hub" class="nav-btn" onclick="showPage('hub')">Hub</button>
+            <button id="nav-mission" class="nav-btn active" onclick="showPage('mission')">Dreamboard</button>
             <button id="nav-logistics" class="nav-btn" onclick="showPage('logistics')">01 Procurement</button>
             <button id="nav-physical" class="nav-btn" onclick="showPage('physical')">02 Hardware</button>
             <button id="nav-backups" class="nav-btn" onclick="showPage('backups')">03 Preservation</button>
@@ -794,32 +789,27 @@
     <div class="master-container">
         <div class="main-content">
             <main class="content-area">
-                <div id="home" class="page active">
-                    <h2 class="page-top-title page-brief-hero">Mission brief</h2>
+                <div id="mission" class="page active">
+                    <h2 class="page-top-title hub-shimmer-text">Dreamboard</h2>
+                    <p class="mission-tagline">One surface for the whole arc: why you are here, where you are in the rebuild, and a straight shot into each phase when you are ready.</p>
                     <div class="mission-block">
                         <h3>Summary</h3>
                         <p>Total workstation overhaul: physical cooling refresh, hardware relocation, and a pure-offline Windows 11 purification sweep.</p>
                     </div>
-                    <div class="home-actions">
-                        <button type="button" class="action-btn" onclick="showPage('hub')">Open mission hub</button>
-                        <button type="button" class="action-btn" onclick="showPage('visualize')">Notes vault</button>
+                    <div id="mission-milestones" class="mission-milestones-wrap"></div>
+                    <div class="mission-cta-row">
+                        <button type="button" class="action-btn" onclick="showPage('visualize')">Notes vault →</button>
                     </div>
                 </div>
 
-                <div id="hub" class="page">
-                    <h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('home')" title="Back to mission brief">Mission hub</h2>
-                    <p class="hub-lede">Pick a phase from the nav or a milestone below.</p>
-                    <div id="mission-milestones"></div>
-                </div>
-
-                <div id="logistics" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('hub')" title="Return to mission hub">01 Procurement</h2><div id="procure-list"></div></div>
-                <div id="physical" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('hub')" title="Return to mission hub">02 Hardware</h2><div id="phys-list"></div></div>
-                <div id="backups" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('hub')" title="Return to mission hub">03 Preservation</h2><div id="backup-list"></div></div>
-                <div id="software" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('hub')" title="Return to mission hub">04 Execution</h2><div id="exec-list"></div></div>
-                <div id="rebuild" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('hub')" title="Return to mission hub">05 Rebuild</h2><div id="rebuild-list"></div></div>
+                <div id="logistics" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('mission')" title="Return to Dreamboard">01 Procurement</h2><div id="procure-list"></div></div>
+                <div id="physical" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('mission')" title="Return to Dreamboard">02 Hardware</h2><div id="phys-list"></div></div>
+                <div id="backups" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('mission')" title="Return to Dreamboard">03 Preservation</h2><div id="backup-list"></div></div>
+                <div id="software" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('mission')" title="Return to Dreamboard">04 Execution</h2><div id="exec-list"></div></div>
+                <div id="rebuild" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('mission')" title="Return to Dreamboard">05 Rebuild</h2><div id="rebuild-list"></div></div>
                 
                 <div id="visualize" class="page">
-                    <h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('hub')" title="Return to mission hub">06 Notes Vault</h2>
+                    <h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('mission')" title="Return to Dreamboard">06 Notes Vault</h2>
                     <div id="vault-editor-panel" class="mission-block">
                         <div id="vault-readonly-strip" class="vault-readonly-strip">Public view: timeline notes are readable; obvious email, phone, card-style numbers, IPs, and long digit runs are masked. Sign in as owner to add notes or import snapshots.</div>
                         <div id="vault-editor-full">
@@ -1295,8 +1285,8 @@
 
         /** Newest-first sort key in `iso`; shown labels in `display`. */
         const siteBuildChangelog = [
+            { iso: "2026-04-17T22:15:00Z", display: "4/17/2026 — night", source: "Cursor + deploy", text: "Replaced Brief/Hub split with a single Dreamboard (summary + milestones + vault shortcut); one nav home, clearer section jumps." },
             { iso: "2026-04-17T20:30:00Z", display: "4/17/2026 — PM", source: "Cursor + deploy", text: "Mobile protocols: fullscreen overlay + close control; Notes vault owner login block moved to bottom; deploy timeline stamps derived from ISO for correct local ordering." },
-            { iso: "2026-04-17T18:00:00Z", display: "4/17/2026 — PM", source: "Cursor + deploy", text: "Split landing into Brief (summary + entry actions) and Hub (milestones + phase nav); mobile top cluster fixed with content offset; smoother hub shimmer; removed End-State block." },
             { iso: "2026-04-17T00:20:00Z", display: "4/17/2026 — early AM", source: "Cursor + deploy", text: "Notes Vault: removed Personal Notes blurb, merged orange deploy log and cyan notes into one date-sorted timeline, editor on top when signed in and slim read-only strip when not." },
             { iso: "2026-04-16T23:55:00Z", display: "4/16/2026 — late PM", source: "Cursor + deploy", text: "Centered hub status and page hero titles (left type inside centered column), added cyan–magenta shimmer to hub, section, footer, and protocol titles." },
             { iso: "2026-04-16T23:30:00Z", display: "4/16/2026 — evening", source: "Cursor + deploy", text: "Added Prev track control with shuffle history and an orange Site build changelog block in Notes Vault." },
