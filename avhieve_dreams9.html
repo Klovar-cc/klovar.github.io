@@ -334,8 +334,12 @@
         .instruction-panel.active { display: block; animation: slideIn 0.3s cubic-bezier(0.19, 1, 0.22, 1); }
         @keyframes slideIn { from { transform: translateX(20%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes slideUpSheet {
-            from { transform: translateY(12%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .info-panel-dismiss {
+            display: none;
         }
 
         .instruction-panel h3 {
@@ -415,6 +419,10 @@
         .action-btn:hover { background: var(--accent-blue); color: #000; }
         .action-btn[disabled] { opacity: 0.45; cursor: not-allowed; }
         .auth-wrap { background: rgba(255, 140, 66, 0.08); border: 1px solid var(--accent-cursor-subdue); border-radius: 10px; padding: 12px; margin-bottom: 14px; }
+        #visualize .auth-wrap--footer {
+            margin-bottom: 0;
+            margin-top: 28px;
+        }
         .auth-status { font-size: 0.8rem; color: var(--accent-cursor); margin-bottom: 10px; }
         .auth-row { display: flex; gap: 8px; flex-wrap: wrap; }
         .auth-row input { background: #080c14; color: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 10px; min-width: 220px; }
@@ -464,6 +472,9 @@
             letter-spacing: 0.06em;
             text-transform: uppercase;
             margin-bottom: 6px;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            max-width: 100%;
         }
 
         .vault-line .vt-body {
@@ -637,31 +648,70 @@
                 overflow: visible;
             }
 
-            /* Instruction sheet: pinned above footer so long pages (e.g. Rebuild) do not require scrolling to the end */
+            /* Protocols: full-screen overlay above sticky header (z 120) — bottom sheet was clipped / obscured */
             .instruction-panel {
                 position: fixed;
-                left: 0;
-                right: 0;
-                bottom: calc(var(--bottom-bar-height) + env(safe-area-inset-bottom, 0px));
+                inset: 0;
                 width: auto;
+                max-width: none;
                 flex: none;
-                max-height: var(--mobile-instruction-max-h);
+                height: 100dvh;
+                max-height: 100dvh;
                 border-left: none;
-                border-top: 2px solid var(--accent-blue-subdue);
-                border-radius: 12px 12px 0 0;
-                padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
-                box-shadow: 0 -12px 40px rgba(0,0,0,0.75);
-                z-index: 110;
-                overflow-y: auto;
+                border-top: none;
+                border-radius: 0;
+                padding: calc(10px + env(safe-area-inset-top, 0px)) 16px calc(12px + env(safe-area-inset-bottom, 0px));
+                box-shadow: none;
+                z-index: 320;
+                overflow: hidden;
+                display: none;
+                flex-direction: column;
                 -webkit-overflow-scrolling: touch;
             }
 
             .instruction-panel.active {
-                animation: slideUpSheet 0.28s cubic-bezier(0.19, 1, 0.22, 1);
+                display: flex;
+                animation: slideUpSheet 0.22s ease-out;
+            }
+
+            .instruction-panel.active #info-title {
+                flex: 0 0 auto;
+            }
+
+            .instruction-panel.active #info-content {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .instruction-panel.active .info-panel-dismiss {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                align-self: flex-end;
+                flex: 0 0 auto;
+                margin: 0 0 10px 0;
+                padding: 8px 16px;
+                border-radius: 8px;
+                border: 1px solid var(--accent-blue-subdue);
+                background: rgba(0, 224, 255, 0.12);
+                color: var(--accent-blue);
+                font: inherit;
+                font-weight: 700;
+                font-size: 0.8rem;
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+                cursor: pointer;
             }
 
             body:has(#info-panel.active) .content-area {
-                padding-bottom: calc(var(--mobile-instruction-max-h) + var(--bottom-bar-height) + 16px + env(safe-area-inset-bottom, 0px));
+                padding-bottom: 0;
+            }
+
+            html.instruction-sheet-open,
+            body.instruction-sheet-open {
+                overflow: hidden;
             }
 
             .cat-group {
@@ -770,15 +820,6 @@
                 
                 <div id="visualize" class="page">
                     <h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('hub')" title="Return to mission hub">06 Notes Vault</h2>
-                    <div id="auth-wrap" class="auth-wrap">
-                        <div id="auth-status" class="auth-status">Cloud sync: local-only mode.</div>
-                        <div class="auth-row">
-                            <input id="auth-email-input" type="email" placeholder="owner@email.com">
-                            <input id="auth-password-input" type="password" placeholder="Owner password">
-                            <button id="auth-login-btn" class="action-btn" style="margin-top: 0;">Owner Password Login</button>
-                            <button id="auth-logout-btn" class="action-btn" style="margin-top: 0;">Logout</button>
-                        </div>
-                    </div>
                     <div id="vault-editor-panel" class="mission-block">
                         <div id="vault-readonly-strip" class="vault-readonly-strip">Public view: timeline notes are readable; obvious email, phone, card-style numbers, IPs, and long digit runs are masked. Sign in as owner to add notes or import snapshots.</div>
                         <div id="vault-editor-full">
@@ -796,10 +837,20 @@
                         <p style="margin-top:0;color:var(--text-muted);font-size:0.88rem;">Site deploys, shared personal notes, and (when you are on this device as owner) local runtime lines — one stream, newest first. On the public cloud page, obvious contact-style patterns in note bodies are masked.</p>
                         <div id="vault-timeline"></div>
                     </div>
+                    <div id="auth-wrap" class="auth-wrap auth-wrap--footer">
+                        <div id="auth-status" class="auth-status">Cloud sync: local-only mode.</div>
+                        <div class="auth-row">
+                            <input id="auth-email-input" type="email" placeholder="owner@email.com">
+                            <input id="auth-password-input" type="password" placeholder="Owner password">
+                            <button id="auth-login-btn" class="action-btn" style="margin-top: 0;">Owner Password Login</button>
+                            <button id="auth-logout-btn" class="action-btn" style="margin-top: 0;">Logout</button>
+                        </div>
+                    </div>
                 </div>
             </main>
 
             <aside id="info-panel" class="instruction-panel">
+                <button type="button" class="info-panel-dismiss" id="info-panel-dismiss" aria-label="Close instructions">Close</button>
                 <h3 id="info-title" class="hub-shimmer-text">Instructional Data</h3>
                 <div id="info-content">Select task text to toggle protocols.</div>
             </aside>
@@ -880,12 +931,33 @@
             if (full) full.style.display = locked ? 'none' : '';
         }
 
+        const instructionSheetMq = window.matchMedia('(max-width: 980px)');
+        function setInstructionSheetScrollLock(open) {
+            if (!instructionSheetMq.matches) {
+                document.documentElement.classList.remove('instruction-sheet-open');
+                document.body.classList.remove('instruction-sheet-open');
+                return;
+            }
+            document.documentElement.classList.toggle('instruction-sheet-open', !!open);
+            document.body.classList.toggle('instruction-sheet-open', !!open);
+        }
+
+        function closeInstructionPanel() {
+            const panel = document.getElementById('info-panel');
+            if (panel) panel.classList.remove('active');
+            lastTask = null;
+            setInstructionSheetScrollLock(false);
+        }
+
         function syncInstructionPanelVisibility() {
             const panel = document.getElementById('info-panel');
             if (!panel) return;
             // In cloud mode, only logged-in owner can see/toggle the instruction side panel.
             panel.style.display = cloudMode && !isOwner ? 'none' : '';
-            if (cloudMode && !isOwner) panel.classList.remove('active');
+            if (cloudMode && !isOwner) {
+                panel.classList.remove('active');
+                setInstructionSheetScrollLock(false);
+            }
         }
 
         function syncOwnerModeClass() {
@@ -1223,6 +1295,7 @@
 
         /** Newest-first sort key in `iso`; shown labels in `display`. */
         const siteBuildChangelog = [
+            { iso: "2026-04-17T20:30:00Z", display: "4/17/2026 — PM", source: "Cursor + deploy", text: "Mobile protocols: fullscreen overlay + close control; Notes vault owner login block moved to bottom; deploy timeline stamps derived from ISO for correct local ordering." },
             { iso: "2026-04-17T18:00:00Z", display: "4/17/2026 — PM", source: "Cursor + deploy", text: "Split landing into Brief (summary + entry actions) and Hub (milestones + phase nav); mobile top cluster fixed with content offset; smoother hub shimmer; removed End-State block." },
             { iso: "2026-04-17T00:20:00Z", display: "4/17/2026 — early AM", source: "Cursor + deploy", text: "Notes Vault: removed Personal Notes blurb, merged orange deploy log and cyan notes into one date-sorted timeline, editor on top when signed in and slim read-only strip when not." },
             { iso: "2026-04-16T23:55:00Z", display: "4/16/2026 — late PM", source: "Cursor + deploy", text: "Centered hub status and page hero titles (left type inside centered column), added cyan–magenta shimmer to hub, section, footer, and protocol titles." },
@@ -1252,9 +1325,20 @@
                 const ms = Date.parse(s);
                 return Number.isFinite(ms) ? ms : 0;
             }
-            const d = new Date(s);
-            const ms = d.getTime();
+            const normalized = s.replace(/\u2014/g, '-').replace(/\u2013/g, '-');
+            let ms = Date.parse(normalized);
+            if (Number.isFinite(ms)) return ms;
+            ms = Date.parse(s);
             return Number.isFinite(ms) ? ms : 0;
+        }
+
+        /** Site deploy rows: show timestamps from ISO so order matches the label (avoids hand-written display vs UTC drift). */
+        function formatVaultSiteTimestamp(iso, fallback) {
+            const t = Date.parse(iso);
+            if (Number.isFinite(t)) {
+                return new Date(t).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+            }
+            return fallback || iso || '';
         }
 
         /** Mask obvious PII in public (cloud, non-owner) timeline — heuristic, not exhaustive. */
@@ -1280,7 +1364,7 @@
                 rows.push({
                     sort: parseVaultSortKey(row.iso),
                     kind: "site",
-                    display: row.display || row.iso,
+                    display: formatVaultSiteTimestamp(row.iso, row.display),
                     text: row.text,
                     source: row.source || "Deploy"
                 });
@@ -1346,12 +1430,14 @@
             if (cloudMode && !isOwner) return;
             const panel = document.getElementById('info-panel');
             if (lastTask === task && panel.classList.contains('active')) {
-                panel.classList.remove('active');
-                lastTask = null; return;
+                closeInstructionPanel();
+                return;
             }
             document.getElementById('info-title').innerText = task;
             document.getElementById('info-content').innerHTML = protocols[task] || "<p>No protocol text yet for this task.</p>";
-            panel.classList.add('active'); lastTask = task;
+            panel.classList.add('active');
+            lastTask = task;
+            setInstructionSheetScrollLock(true);
         }
 
         function checkSection(id) {
@@ -1441,9 +1527,7 @@
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             page.classList.add('active');
             navBtn.classList.add('active');
-            const panel = document.getElementById('info-panel');
-            panel.classList.remove('active');
-            lastTask = null;
+            closeInstructionPanel();
             syncInstructionPanelVisibility();
         }
 
@@ -1599,6 +1683,16 @@
                 location.reload();
             };
         }
+
+        document.getElementById('info-panel-dismiss')?.addEventListener('click', closeInstructionPanel);
+        instructionSheetMq.addEventListener('change', () => {
+            if (!instructionSheetMq.matches) setInstructionSheetScrollLock(false);
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            const panel = document.getElementById('info-panel');
+            if (panel && panel.classList.contains('active')) closeInstructionPanel();
+        });
 
         (async function boot() {
             await initCloudMode();
