@@ -626,7 +626,7 @@
             </audio>
             <div class="hub-media-actions">
                 <button type="button" class="hub-media-btn" id="audio-btn-prev" title="Previous track">Prev</button>
-                <button type="button" class="hub-media-btn" id="audio-btn-forward" title="Skip forward 15 seconds">Forward</button>
+                <button type="button" class="hub-media-btn" id="audio-btn-pause" title="Pause or resume playback">Pause</button>
                 <button type="button" class="hub-media-btn" id="audio-btn-next" title="Next track">Next</button>
             </div>
         </div>
@@ -988,14 +988,19 @@
         });
         updateAudioLabel();
 
-        function skipAudioForward() {
-            try {
-                const dur = audio.duration;
-                const next = audio.currentTime + 15;
-                if (Number.isFinite(dur) && dur > 0) audio.currentTime = Math.max(0, Math.min(dur - 0.05, next));
-                else audio.currentTime = Math.max(0, next);
-            } catch (_) { /* ignore */ }
+        const pauseBtn = document.getElementById('audio-btn-pause');
+        function syncMediaPauseBtnLabel() {
+            if (!pauseBtn) return;
+            pauseBtn.textContent = audio.paused ? 'Play' : 'Pause';
         }
+        function toggleAudioPlayback() {
+            if (audio.paused) audio.play().catch(() => {});
+            else audio.pause();
+            syncMediaPauseBtnLabel();
+        }
+        audio.addEventListener('play', syncMediaPauseBtnLabel);
+        audio.addEventListener('pause', syncMediaPauseBtnLabel);
+        syncMediaPauseBtnLabel();
 
         function skipToNextProgramTrack() {
             advanceToNextShuffledTrack();
@@ -1025,7 +1030,7 @@
         }
 
         document.getElementById('audio-btn-prev')?.addEventListener('click', skipToPreviousProgramTrack);
-        document.getElementById('audio-btn-forward')?.addEventListener('click', skipAudioForward);
+        pauseBtn?.addEventListener('click', toggleAudioPlayback);
         document.getElementById('audio-btn-next')?.addEventListener('click', skipToNextProgramTrack);
 
         // Task title -> HTML blurb (keys must match section item strings exactly)
@@ -1114,7 +1119,6 @@
 
         /** Newest-first sort key in `iso`; shown labels in `display`. */
         const siteBuildChangelog = [
-            { iso: "2026-04-17T12:00:00Z", display: "4/17/2026 — midday", source: "Cursor + deploy", text: "Notes Vault: personal notes from cloud state are visible to all visitors; public view masks common doxxing-shaped patterns (email, phone, cards, IPv4, long digit runs). Runtime lines stay owner/local only on cloud." },
             { iso: "2026-04-17T00:20:00Z", display: "4/17/2026 — early AM", source: "Cursor + deploy", text: "Notes Vault: removed Personal Notes blurb, merged orange deploy log and cyan notes into one date-sorted timeline, editor on top when signed in and slim read-only strip when not." },
             { iso: "2026-04-16T23:55:00Z", display: "4/16/2026 — late PM", source: "Cursor + deploy", text: "Centered hub status and page hero titles (left type inside centered column), added cyan–magenta shimmer to hub, section, footer, and protocol titles." },
             { iso: "2026-04-16T23:30:00Z", display: "4/16/2026 — evening", source: "Cursor + deploy", text: "Added Prev track control with shuffle history and an orange Site build changelog block in Notes Vault." },
