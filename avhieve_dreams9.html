@@ -523,33 +523,38 @@
                 --mobile-instruction-max-h: min(30vh, 320px);
             }
 
+            /* Flex column avoids broken grid rows when the top cluster is out-of-flow (fixed); sticky keeps bar visible while scrolling. */
+            html {
+                overflow-x: hidden;
+            }
+
             body {
+                display: flex;
+                flex-direction: column;
                 height: auto;
                 min-height: 100vh;
-                overflow: auto;
+                min-height: 100dvh;
+                overflow-x: visible;
+                overflow-y: auto;
                 background-attachment: scroll;
-                grid-template-columns: 1fr;
-                grid-template-rows: auto 1fr auto;
-                grid-template-areas:
-                    "hubstack"
-                    "hubmain"
-                    "hubfoot";
+                grid-template-columns: unset;
+                grid-template-rows: unset;
+                grid-template-areas: unset;
             }
 
             .hub-top-cluster {
                 display: flex;
                 flex-direction: column;
-                grid-area: hubstack;
-                position: fixed;
+                flex: 0 0 auto;
+                align-self: stretch;
+                position: sticky;
                 top: 0;
-                left: 0;
-                right: 0;
                 z-index: 120;
                 padding-top: env(safe-area-inset-top, 0px);
                 background: rgba(10, 17, 30, 0.98);
                 backdrop-filter: blur(15px);
                 border-bottom: 2px solid var(--accent-blue-subdue);
-                box-shadow: 0 6px 28px rgba(0, 0, 0, 0.45);
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
             }
 
             .top-audio-bar {
@@ -587,10 +592,12 @@
             }
 
             .master-container {
-                grid-area: hubmain;
+                flex: 1 1 auto;
+                width: 100%;
+                min-height: 0;
+                grid-area: unset;
                 flex-direction: column;
                 overflow: visible;
-                padding-top: var(--hub-mobile-top-pad, 0px);
             }
 
             nav {
@@ -677,6 +684,10 @@
             }
 
             .bottom-progress-bar {
+                grid-area: unset;
+                flex: 0 0 auto;
+                align-self: stretch;
+                width: 100%;
                 height: auto;
                 padding: 10px 12px;
                 position: sticky;
@@ -1422,32 +1433,6 @@
             });
         }
 
-        const hubMobileTopMq = window.matchMedia('(max-width: 980px)');
-        let hubTopClusterResizeObs = null;
-        function syncHubMobileTopPad() {
-            const cluster = document.querySelector('.hub-top-cluster');
-            if (!cluster) return;
-            if (!hubMobileTopMq.matches) {
-                document.documentElement.style.removeProperty('--hub-mobile-top-pad');
-                return;
-            }
-            const h = Math.ceil(cluster.getBoundingClientRect().height);
-            if (h > 0) document.documentElement.style.setProperty('--hub-mobile-top-pad', h + 'px');
-        }
-        function initHubMobileTopPad() {
-            syncHubMobileTopPad();
-            window.addEventListener('resize', syncHubMobileTopPad);
-            window.addEventListener('orientationchange', syncHubMobileTopPad);
-            hubMobileTopMq.addEventListener('change', syncHubMobileTopPad);
-            const cluster = document.querySelector('.hub-top-cluster');
-            if (cluster && typeof ResizeObserver !== 'undefined' && !hubTopClusterResizeObs) {
-                hubTopClusterResizeObs = new ResizeObserver(() => syncHubMobileTopPad());
-                hubTopClusterResizeObs.observe(cluster);
-            }
-            if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncHubMobileTopPad);
-            requestAnimationFrame(() => requestAnimationFrame(syncHubMobileTopPad));
-        }
-
         function showPage(id) {
             const page = document.getElementById(id);
             const navBtn = document.getElementById('nav-' + id);
@@ -1460,7 +1445,6 @@
             panel.classList.remove('active');
             lastTask = null;
             syncInstructionPanelVisibility();
-            syncHubMobileTopPad();
         }
 
         function loadRuntimeJournalEntries() {
@@ -1618,7 +1602,6 @@
 
         (async function boot() {
             await initCloudMode();
-            initHubMobileTopPad();
             renderAll();
             renderVaultTimeline();
         })();
