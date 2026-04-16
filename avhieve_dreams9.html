@@ -635,7 +635,6 @@
             "Pristine_State.mp3",
             "Strip_the_Skin.mp3",
             "Strip_the_Skin (1).mp3",
-            "System_Status_Hero.mp3",
             "The_Heavy_Transfer.mp3",
             "Execute_the_Purge.mp3",
             "Manual_Override.mp3",
@@ -644,6 +643,7 @@
         ];
         let trackIdx = 0;
         let shufflePool = [];
+        let completionPlayedThisSession = false;
         const audio = document.getElementById('dream-audio');
         
         function updateAudioLabel() {
@@ -823,22 +823,17 @@
             }
 
             // --- 100% Completion Trigger ---
-            if (pct === 100 && !saved.completionTriggered) {
-                saved.completionTriggered = true;
-                appData.checklist = saved;
-                writeLocalChecklist(saved);
-                
-                // Force play the completion anthem
+            if (pct === 100 && !completionPlayedThisSession) {
+                completionPlayedThisSession = true;
+
+                // Force play the completion anthem once, then resume normal shuffle.
                 const completionTrack = "System_Status_Hero.mp3";
-                trackIdx = tracks.indexOf(completionTrack);
                 audio.src = completionTrack;
-                updateAudioLabel();
+                document.getElementById('audio-status').innerText = "HUB ACTIVE: System Status Hero";
                 audio.play();
-            } else if (pct < 100 && saved.completionTriggered) {
-                // Reset trigger if they uncheck a box
-                saved.completionTriggered = false;
-                appData.checklist = saved;
-                writeLocalChecklist(saved);
+            } else if (pct < 100 && completionPlayedThisSession) {
+                // Re-arm completion anthem only if progress drops below 100%.
+                completionPlayedThisSession = false;
             }
 
             document.querySelectorAll('input[type="checkbox"]').forEach(i => {
