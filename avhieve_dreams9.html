@@ -675,12 +675,8 @@
                             <button id="auth-logout-btn" class="action-btn" style="margin-top: 0;">Logout</button>
                         </div>
                     </div>
-                    <div id="notes-locked-message" class="mission-block" style="display: none;">
-                        <h3>Private Notes Vault</h3>
-                        <p>This section is login-protected. Sign in with owner credentials to view and edit notes.</p>
-                    </div>
                     <div id="vault-editor-panel" class="mission-block">
-                        <div id="vault-readonly-strip" class="vault-readonly-strip">Read-only: sign in as owner to add notes or import snapshots. Deploy history below is public.</div>
+                        <div id="vault-readonly-strip" class="vault-readonly-strip">Public view: timeline notes are readable; obvious email, phone, card-style numbers, IPs, and long digit runs are masked. Sign in as owner to add notes or import snapshots.</div>
                         <div id="vault-editor-full">
                             <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;">
                                 <button id="export-snapshot-btn" class="action-btn" style="margin-top: 0;">Export Offline Snapshot</button>
@@ -693,7 +689,7 @@
                     </div>
                     <div class="mission-block vault-timeline-block">
                         <h3 class="hub-shimmer-text">Vault timeline</h3>
-                        <p style="margin-top:0;color:var(--text-muted);font-size:0.88rem;">Site deploys, personal notes, and runtime lines — one stream, newest first.</p>
+                        <p style="margin-top:0;color:var(--text-muted);font-size:0.88rem;">Site deploys, shared personal notes, and (when you are on this device as owner) local runtime lines — one stream, newest first. On the public cloud page, obvious contact-style patterns in note bodies are masked.</p>
                         <div id="vault-timeline"></div>
                     </div>
                 </div>
@@ -769,14 +765,12 @@
 
         function syncNotesVisibility() {
             const authWrap = document.getElementById('auth-wrap');
-            const lockedMessage = document.getElementById('notes-locked-message');
             const locked = cloudMode && !isOwner;
             const page = document.getElementById('visualize');
             const strip = document.getElementById('vault-readonly-strip');
             const full = document.getElementById('vault-editor-full');
 
             if (authWrap) authWrap.style.display = isOwner ? 'none' : '';
-            if (lockedMessage) lockedMessage.style.display = locked ? '' : 'none';
             if (page) page.classList.toggle('vault-readonly-page', !!locked);
             if (strip) strip.style.display = locked ? 'block' : 'none';
             if (full) full.style.display = locked ? 'none' : '';
@@ -1120,6 +1114,7 @@
 
         /** Newest-first sort key in `iso`; shown labels in `display`. */
         const siteBuildChangelog = [
+            { iso: "2026-04-17T12:00:00Z", display: "4/17/2026 — midday", source: "Cursor + deploy", text: "Notes Vault: personal notes from cloud state are visible to all visitors; public view masks common doxxing-shaped patterns (email, phone, cards, IPv4, long digit runs). Runtime lines stay owner/local only on cloud." },
             { iso: "2026-04-17T00:20:00Z", display: "4/17/2026 — early AM", source: "Cursor + deploy", text: "Notes Vault: removed Personal Notes blurb, merged orange deploy log and cyan notes into one date-sorted timeline, editor on top when signed in and slim read-only strip when not." },
             { iso: "2026-04-16T23:55:00Z", display: "4/16/2026 — late PM", source: "Cursor + deploy", text: "Centered hub status and page hero titles (left type inside centered column), added cyan–magenta shimmer to hub, section, footer, and protocol titles." },
             { iso: "2026-04-16T23:30:00Z", display: "4/16/2026 — evening", source: "Cursor + deploy", text: "Added Prev track control with shuffle history and an orange Site build changelog block in Notes Vault." },
@@ -1153,11 +1148,24 @@
             return Number.isFinite(ms) ? ms : 0;
         }
 
+        /** Mask obvious PII in public (cloud, non-owner) timeline — heuristic, not exhaustive. */
+        function redactVaultTextForPublic(raw) {
+            let s = String(raw ?? "");
+            s = s.replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, "[redacted]");
+            s = s.replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[redacted]");
+            s = s.replace(/\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g, "[redacted]");
+            s = s.replace(/\b(?:\+1[-.\s]?)?(?:\([0-9]{3}\)|[0-9]{3})[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}\b/g, "[redacted]");
+            s = s.replace(/\b(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\b/g, "[redacted]");
+            s = s.replace(/\b\d{10,}\b/g, "[redacted]");
+            return s;
+        }
+
         function renderVaultTimeline() {
             const root = document.getElementById("vault-timeline");
             if (!root) return;
             root.innerHTML = "";
             const rows = [];
+            const publicCloudReader = cloudMode && !isOwner;
 
             siteBuildChangelog.forEach((row) => {
                 rows.push({
@@ -1169,17 +1177,16 @@
                 });
             });
 
-            const showPrivate = !cloudMode || isOwner;
-            if (showPrivate) {
-                loadUserJournalEntries().forEach((e) => {
-                    rows.push({
-                        sort: parseVaultSortKey(e.date),
-                        kind: "user",
-                        display: e.date,
-                        text: e.text,
-                        source: "Personal note"
-                    });
+            loadUserJournalEntries().forEach((e) => {
+                rows.push({
+                    sort: parseVaultSortKey(e.date),
+                    kind: "user",
+                    display: e.date,
+                    text: e.text,
+                    source: "Personal note"
                 });
+            });
+            if (!publicCloudReader) {
                 loadRuntimeJournalEntries().forEach((e) => {
                     rows.push({
                         sort: parseVaultSortKey(e.date),
@@ -1203,7 +1210,11 @@
                 meta.textContent = row.display;
                 const p = document.createElement("p");
                 p.className = "vt-body";
-                p.textContent = row.text;
+                const body =
+                    publicCloudReader && row.kind === "user"
+                        ? redactVaultTextForPublic(row.text)
+                        : row.text;
+                p.textContent = body;
                 const src = document.createElement("span");
                 src.className = "vt-src";
                 src.textContent = row.source;
