@@ -831,9 +831,6 @@
                 audio.src = completionTrack;
                 document.getElementById('audio-status').innerText = "HUB ACTIVE: System Status Hero";
                 audio.play();
-            } else if (pct < 100 && completionPlayedThisSession) {
-                // Re-arm completion anthem only if progress drops below 100%.
-                completionPlayedThisSession = false;
             }
 
             document.querySelectorAll('input[type="checkbox"]').forEach(i => {
@@ -842,6 +839,8 @@
                         e.target.checked = !!saved[e.target.id];
                         return;
                     }
+                    // Only explicit local uncheck can re-arm the completion anthem trigger.
+                    if (!e.target.checked) completionPlayedThisSession = false;
                     saved[e.target.id] = e.target.checked;
                     appData.checklist = saved;
                     writeLocalChecklist(saved);
