@@ -366,45 +366,95 @@
         .system-entry { background: var(--accent-red-subdue); border-left: 4px solid var(--accent-red); }
         .cursor-entry { background: var(--accent-cursor-subdue); border-left: 4px solid var(--accent-cursor); }
 
-        .site-build-log-block {
-            border-color: rgba(255, 140, 66, 0.55);
-            background: rgba(255, 140, 66, 0.07);
+        .vault-timeline-block {
+            border-color: var(--accent-blue-subdue);
+            background: rgba(0, 224, 255, 0.04);
         }
 
-        .site-build-log-block h3 {
+        .vault-readonly-strip {
+            display: none;
+            margin: 0 0 10px 0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--accent-cursor-subdue);
+            background: rgba(255, 140, 66, 0.1);
             color: var(--accent-cursor);
+            font-size: 0.82rem;
+            line-height: 1.35;
         }
 
-        .site-build-entry {
-            margin-top: 14px;
+        #visualize.vault-readonly-page #vault-editor-panel {
+            padding: 12px 16px;
+            margin-bottom: 18px;
+        }
+
+        .vault-line {
+            margin-top: 12px;
             padding: 12px 14px;
             border-radius: 8px;
-            border-left: 4px solid var(--accent-cursor);
             background: rgba(10, 14, 24, 0.65);
         }
 
-        .site-build-entry .sb-meta {
+        .vault-line:first-of-type {
+            margin-top: 0;
+        }
+
+        .vault-line .vt-meta {
             font-size: 0.72rem;
             font-weight: 700;
             letter-spacing: 0.06em;
             text-transform: uppercase;
-            color: var(--accent-cursor);
             margin-bottom: 6px;
         }
 
-        .site-build-entry .sb-line {
+        .vault-line .vt-body {
             margin: 0;
             font-size: 0.92rem;
             line-height: 1.45;
             color: var(--text-main);
         }
 
-        .site-build-entry .sb-src {
+        .vault-line .vt-src {
             display: inline-block;
             margin-top: 6px;
             font-size: 0.68rem;
+            opacity: 0.92;
+        }
+
+        .vault-line.site-line {
+            border-left: 4px solid var(--accent-cursor);
+        }
+
+        .vault-line.site-line .vt-meta {
+            color: var(--accent-cursor);
+        }
+
+        .vault-line.site-line .vt-src {
             color: #fbbf24;
-            opacity: 0.9;
+        }
+
+        .vault-line.personal-line {
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .vault-line.personal-line .vt-meta {
+            color: var(--accent-blue);
+        }
+
+        .vault-line.personal-line .vt-src {
+            color: var(--accent-blue-subdue);
+        }
+
+        .vault-line.runtime-line {
+            border-left: 4px solid #a78bfa;
+        }
+
+        .vault-line.runtime-line .vt-meta {
+            color: #c4b5fd;
+        }
+
+        .vault-line.runtime-line .vt-src {
+            color: #a78bfa;
         }
 
         /* Mobile/tablet layout for Android and narrow screens */
@@ -616,15 +666,6 @@
                 
                 <div id="visualize" class="page">
                     <h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">06 Notes Vault</h2>
-                    <div class="mission-block">
-                        <h3>Personal Notes</h3>
-                        <p>Offline-first for Galaxy S25 Ultra: this page runs without internet, and you can export/import a full local snapshot (tasks + notes + runtime timeline) before any OS wipe.</p>
-                    </div>
-                    <div class="mission-block site-build-log-block">
-                        <h3>Site build changelog</h3>
-                        <p style="margin-top:0;color:var(--text-muted);font-size:0.88rem;">Every deploy and Cursor pass: one line each, newest first.</p>
-                        <div id="site-build-log-entries"></div>
-                    </div>
                     <div id="auth-wrap" class="auth-wrap">
                         <div id="auth-status" class="auth-status">Cloud sync: local-only mode.</div>
                         <div class="auth-row">
@@ -638,15 +679,22 @@
                         <h3>Private Notes Vault</h3>
                         <p>This section is login-protected. Sign in with owner credentials to view and edit notes.</p>
                     </div>
-                    <div id="notes-private-content">
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;">
-                            <button id="export-snapshot-btn" class="action-btn" style="margin-top: 0;">Export Offline Snapshot</button>
-                            <button id="import-snapshot-btn" class="action-btn" style="margin-top: 0;">Import Offline Snapshot</button>
-                            <input id="snapshot-file-input" type="file" accept="application/json" style="display: none;">
+                    <div id="vault-editor-panel" class="mission-block">
+                        <div id="vault-readonly-strip" class="vault-readonly-strip">Read-only: sign in as owner to add notes or import snapshots. Deploy history below is public.</div>
+                        <div id="vault-editor-full">
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;">
+                                <button id="export-snapshot-btn" class="action-btn" style="margin-top: 0;">Export Offline Snapshot</button>
+                                <button id="import-snapshot-btn" class="action-btn" style="margin-top: 0;">Import Offline Snapshot</button>
+                                <input id="snapshot-file-input" type="file" accept="application/json" style="display: none;">
+                            </div>
+                            <textarea id="journal-input" placeholder="Write a personal note..."></textarea>
+                            <button id="add-entry-btn" class="action-btn">Save Note</button>
                         </div>
-                        <textarea id="journal-input" placeholder="Write a personal note..."></textarea>
-                        <button id="add-entry-btn" class="action-btn">Save Note</button>
-                        <div id="journal-entries" style="margin-top: 30px;"></div>
+                    </div>
+                    <div class="mission-block vault-timeline-block">
+                        <h3 class="hub-shimmer-text">Vault timeline</h3>
+                        <p style="margin-top:0;color:var(--text-muted);font-size:0.88rem;">Site deploys, personal notes, and runtime lines — one stream, newest first.</p>
+                        <div id="vault-timeline"></div>
                     </div>
                 </div>
             </main>
@@ -721,14 +769,17 @@
 
         function syncNotesVisibility() {
             const authWrap = document.getElementById('auth-wrap');
-            const privateContent = document.getElementById('notes-private-content');
             const lockedMessage = document.getElementById('notes-locked-message');
             const locked = cloudMode && !isOwner;
+            const page = document.getElementById('visualize');
+            const strip = document.getElementById('vault-readonly-strip');
+            const full = document.getElementById('vault-editor-full');
 
-            // Public cloud viewers see login-only shell.
             if (authWrap) authWrap.style.display = isOwner ? 'none' : '';
-            if (privateContent) privateContent.style.display = locked ? 'none' : '';
             if (lockedMessage) lockedMessage.style.display = locked ? '' : 'none';
+            if (page) page.classList.toggle('vault-readonly-page', !!locked);
+            if (strip) strip.style.display = locked ? 'block' : 'none';
+            if (full) full.style.display = locked ? 'none' : '';
         }
 
         function syncInstructionPanelVisibility() {
@@ -784,7 +835,7 @@
                 writeLocalChecklist(appData.checklist);
                 writeLocalNotes(appData.notes);
                 renderAll();
-                renderJournal();
+                renderVaultTimeline();
             }
         }
 
@@ -1069,6 +1120,7 @@
 
         /** Newest-first sort key in `iso`; shown labels in `display`. */
         const siteBuildChangelog = [
+            { iso: "2026-04-17T00:20:00Z", display: "4/17/2026 — early AM", source: "Cursor + deploy", text: "Notes Vault: removed Personal Notes blurb, merged orange deploy log and cyan notes into one date-sorted timeline, editor on top when signed in and slim read-only strip when not." },
             { iso: "2026-04-16T23:55:00Z", display: "4/16/2026 — late PM", source: "Cursor + deploy", text: "Centered hub status and page hero titles (left type inside centered column), added cyan–magenta shimmer to hub, section, footer, and protocol titles." },
             { iso: "2026-04-16T23:30:00Z", display: "4/16/2026 — evening", source: "Cursor + deploy", text: "Added Prev track control with shuffle history and an orange Site build changelog block in Notes Vault." },
             { iso: "2026-04-16T22:00:00Z", display: "4/16/2026 — PM", source: "Cursor + deploy", text: "Media bar: Forward (+15s) and Next; section h2 titles jump to Launchpad; protocols expanded; mobile instruction sheet height set to ~30vh." },
@@ -1089,29 +1141,85 @@
             { iso: "2026-04-13T19:57:00Z", display: "4/13/2026, 1:57 PM", source: "Gemini / Cursor", text: "Replaced static system log with dynamic Gemini-tinted lines inside the journal feed." }
         ];
 
-        function renderSiteBuildLog() {
-            const root = document.getElementById('site-build-log-entries');
+        function parseVaultSortKey(isoOrLocaleDate) {
+            if (!isoOrLocaleDate) return 0;
+            const s = String(isoOrLocaleDate).trim();
+            if (/^\d{4}-\d{2}-\d{2}T/.test(s)) {
+                const ms = Date.parse(s);
+                return Number.isFinite(ms) ? ms : 0;
+            }
+            const d = new Date(s);
+            const ms = d.getTime();
+            return Number.isFinite(ms) ? ms : 0;
+        }
+
+        function renderVaultTimeline() {
+            const root = document.getElementById("vault-timeline");
             if (!root) return;
             root.innerHTML = "";
-            [...siteBuildChangelog]
-                .sort((a, b) => String(b.iso).localeCompare(String(a.iso)))
-                .forEach((row) => {
-                    const div = document.createElement("div");
-                    div.className = "site-build-entry";
-                    const meta = document.createElement("div");
-                    meta.className = "sb-meta";
-                    meta.textContent = row.display || row.iso;
-                    const p = document.createElement("p");
-                    p.className = "sb-line";
-                    p.textContent = row.text;
-                    const src = document.createElement("span");
-                    src.className = "sb-src";
-                    src.textContent = row.source || "Deploy";
-                    div.appendChild(meta);
-                    div.appendChild(p);
-                    div.appendChild(src);
-                    root.appendChild(div);
+            const rows = [];
+
+            siteBuildChangelog.forEach((row) => {
+                rows.push({
+                    sort: parseVaultSortKey(row.iso),
+                    kind: "site",
+                    display: row.display || row.iso,
+                    text: row.text,
+                    source: row.source || "Deploy"
                 });
+            });
+
+            const showPrivate = !cloudMode || isOwner;
+            if (showPrivate) {
+                loadUserJournalEntries().forEach((e) => {
+                    rows.push({
+                        sort: parseVaultSortKey(e.date),
+                        kind: "user",
+                        display: e.date,
+                        text: e.text,
+                        source: "Personal note"
+                    });
+                });
+                loadRuntimeJournalEntries().forEach((e) => {
+                    rows.push({
+                        sort: parseVaultSortKey(e.date),
+                        kind: "runtime",
+                        display: e.date,
+                        text: e.text,
+                        source: e.source === "gemini" ? "Gemini runtime" : "Cursor runtime"
+                    });
+                });
+            }
+
+            rows.sort((a, b) => b.sort - a.sort);
+
+            rows.forEach((row) => {
+                const div = document.createElement("div");
+                div.className =
+                    "vault-line " +
+                    (row.kind === "site" ? "site-line" : row.kind === "user" ? "personal-line" : "runtime-line");
+                const meta = document.createElement("div");
+                meta.className = "vt-meta";
+                meta.textContent = row.display;
+                const p = document.createElement("p");
+                p.className = "vt-body";
+                p.textContent = row.text;
+                const src = document.createElement("span");
+                src.className = "vt-src";
+                src.textContent = row.source;
+                div.appendChild(meta);
+                div.appendChild(p);
+                div.appendChild(src);
+                root.appendChild(div);
+            });
+
+            if (rows.length === 0) {
+                const empty = document.createElement("div");
+                empty.className = "vault-line personal-line";
+                empty.innerHTML =
+                    '<div class="vt-meta">Empty</div><p class="vt-body">No timeline rows yet.</p><span class="vt-src">—</span>';
+                root.appendChild(empty);
+            }
         }
 
         function toggleProtocol(task) {
@@ -1262,33 +1370,8 @@
             const runtime = loadRuntimeJournalEntries();
             runtime.unshift(row);
             saveRuntimeJournalEntries(runtime);
-            renderJournal();
+            renderVaultTimeline();
         };
-
-        function renderJournal() {
-            const personalList = document.getElementById('journal-entries');
-            if (!personalList) return;
-            personalList.innerHTML = '';
-            const userEntries = loadUserJournalEntries();
-
-            userEntries.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            userEntries.forEach(e => {
-                const div = document.createElement('div');
-                div.className = 'entry-card user-entry';
-                const color = 'var(--accent-blue)';
-                const title = e.date;
-                div.innerHTML = `<span style="color:${color}; font-size:0.8rem; font-weight:bold;">${title}</span><p style="margin:5px 0 0 0">${e.text}</p>`;
-                personalList.appendChild(div);
-            });
-
-            if (userEntries.length === 0) {
-                const empty = document.createElement('div');
-                empty.className = 'entry-card user-entry';
-                empty.innerHTML = `<span style="color:var(--accent-blue); font-size:0.8rem; font-weight:bold;">No personal notes yet</span><p style="margin:5px 0 0 0">Write one above and click Save Note.</p>`;
-                personalList.appendChild(empty);
-            }
-        }
 
         function exportOfflineSnapshot() {
             const payload = {
@@ -1330,7 +1413,7 @@
                     localStorage.setItem(JOURNAL_RUNTIME_KEY, JSON.stringify(runtime));
                     if (cloudMode && canEdit()) saveRemoteState();
                     renderAll();
-                    renderJournal();
+                    renderVaultTimeline();
                     alert('Offline snapshot imported successfully.');
                 } catch (err) {
                     alert('Snapshot import failed. Please select a valid JSON export from this app.');
@@ -1357,7 +1440,7 @@
                     return;
                 }
                 input.value = '';
-                renderJournal();
+                renderVaultTimeline();
             };
         }
 
@@ -1397,8 +1480,7 @@
         (async function boot() {
             await initCloudMode();
             renderAll();
-            renderJournal();
-            renderSiteBuildLog();
+            renderVaultTimeline();
         })();
     </script>
 </body>
