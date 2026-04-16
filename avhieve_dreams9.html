@@ -712,67 +712,67 @@
         });
         updateAudioLabel();
 
-        // --- THE COMPLETE DICTIONARY ---
+        // Task title -> short HTML blurb (keys must match section item strings exactly)
         const protocols = {
-            "Hard Drive Cage / Steel Bracket Rack": "Assemble using provided plates; ensure 3.5-inch slots are cleared for RAID relocation.",
-            "100cm CRJ 15-Pin SATA Power Extension": "Extend PSU reach to the new cage location to prevent cable strain.",
-            "120mm USB 5V PC Fan + USB-C Adapter": "Position for exhaust/intake as needed; use USB-C adapter for external power source.",
-            
-            "Replace broken CPU fan": "Unmount old fan, clean area, mount new fan, ensure header is plugged into CPU_FAN on mobo.",
-            "Re-apply fresh thermal paste (5950X)": "Clean old paste with isopropyl alcohol. Apply pea-sized amount of new thermal paste.",
-            "Optimize 6x QL120 Airflow layout": "Set front/bottom to intake, rear/top to exhaust for optimal positive pressure.",
-            "Assemble HDD cage / Mount B-Drive Array": "Secure WD80EFAX drives in cage. Connect SATA data and power cables firmly.",
-            "Internal SATA/AIO Cable Management": "Route cables behind motherboard tray. Use zip ties or velcro straps to secure.",
-            "Desk Deep Clean": "Remove all items, wipe down surfaces, manage external cables.",
+            "Hard Drive Cage / Steel Bracket Rack": "<p>Assemble the cage; clear 3.5&quot; bays for the RAID move.</p>",
+            "100cm CRJ 15-Pin SATA Power Extension": "<p>Add length so SATA power reaches the new cage without tension.</p>",
+            "120mm USB 5V PC Fan + USB-C Adapter": "<p>Place for intake/exhaust; power via USB-C adapter.</p>",
 
-            "Radarr/Sonarr Database Exports": "System -> Backup in Web UI; save <code>.zip</code> to safe storage.",
-            "SABnzbd config.ini & Scripts": "Copy <code>%AppData%/Local/SABnzbd/admin/config.ini</code> and custom scripts folder.",
-            "TDARR Plugin & Node Configs": "Copy JSON configs from install directory.",
-            "Plex Metadata/Watched States": "Backup <code>com.plexapp.plugins.library.db</code> in AppData Databases.",
-            "qBittorrent .fastresume & Categories": "Backup <code>%LOCALAPPDATA%\\qBittorrent\\BT_backup</code> and <code>qBittorrent.ini</code>.",
-            "Directory Opus .ocfg Export": "Settings -> Backup and Restore; export to B: Drive.",
-            "Voicemeeter XML Routing": "Menu -> Save Settings; store the <code>.xml</code>.",
-            "Synapse 4 Macros & Profiles": "Manual local export of Tartarus V2 and Naga V2 XML profiles.",
-            "Signal Desktop Local Messages": "Use Signal's built-in backup tool to export chat history locally.",
-            "Resolve Studio PowerBins & LUTs": "Export PowerBins from Media Pool. Copy LUT folder from <code>ProgramData\\Blackmagic Design</code>.",
-            "MusicBee Backup (Library & AppData)": "Export library via File -> Library -> Backup Library to E: Drive, or manually copy MusicBeeLibrary.mbl and %appdata%\\MusicBee.",
-            "Cursor App & Settings Backup": "Back up Cursor profile and project data before wipe: copy <code>%APPDATA%\\Cursor\\User</code> (settings/keybindings/snippets), <code>%APPDATA%\\Cursor\\User\\globalStorage</code>, and <code>%USERPROFILE%\\.cursor</code> (rules/skills/project metadata) to verified local storage.",
-            "DisplayFusion License Unhooking": "<b>Action</b>: DisplayFusion -> Settings -> License Key. Copy key to <code>E:\\Backup\\licenses.txt</code>.<br><br><b>Unhook</b>: log into Binary Fortress and remove this PC from active devices.",
-            "Camo Studio License Unhooking": "<b>Action</b>: open Camo Studio account/license tab.<br><br><b>Unhook</b>: click <code>Sign Out</code> or <code>Deactivate this device</code> to free the seat.",
-            "Voicemeeter License Ledger Backup": "<b>Action</b>: save Voicemeeter <b>License Code</b> + <b>Transaction ID</b> to <code>E:\\Backup\\licenses.txt</code>.<br><br><b>Critical</b>: required for <code>REGEN</code> after reinstall with the new Challenge Code.",
-            "Transfer B: Drive Files + New RAID Prep": "Move all required data off <code>B:</code> to verified storage and confirm integrity. No manual delete pass required if the next step is creating a brand-new RAID 0 array (array creation will wipe existing data).",
-            
-            "Decryption Check (16TB RAID 10)": "CRITICAL: Verify BitLocker or other encryption is fully suspended/disabled on the B: drive array before OS wipe to prevent data lock.",
-            "Rufus Build: No-Cloud/No-BitLocker": "Select ISO -> Start -> Check 'Remove MS Account' and 'Disable BitLocker'.",
-            "Confirm English-Only Profile Paths": "Verify English (US) during OOBE; delete any leftover localized desktop.ini folders (for example 'Documentos') if they appear.",
-            "Create New RAID 0 Array (B: Build Step)": "In motherboard/RAID controller utility, create a fresh RAID 0 array using target drives (this wipes existing array metadata/data). Confirm stripe settings and that the new volume is detected before proceeding.",
+            "Replace broken CPU fan": "<p>Swap fan, clean mount, plug into CPU_FAN.</p>",
+            "Re-apply fresh thermal paste (5950X)": "<p>Strip old paste (IPA), pea-size new paste, seat cooler evenly.</p>",
+            "Optimize 6x QL120 Airflow layout": "<p>Front/bottom in, rear/top out; balance pressure.</p>",
+            "Assemble HDD cage / Mount B-Drive Array": "<p>Seat drives, firm SATA data + power.</p>",
+            "Internal SATA/AIO Cable Management": "<p>Route behind tray; tie off slack.</p>",
+            "Desk Deep Clean": "<p>Clear surface, dust, tidy external cables.</p>",
 
-            "Run BCU (Bulk Crap Uninstaller)": "Eradicate default Windows telemetry, pre-installed bloatware, and completely remove OneDrive.",
-            "Mount Synology NAS Drives": "Use Synology Assistant to map P: (Media), W: (Docker), X: (Drive), Y: (Main), Z: (PLEX) to your NAS host path.",
-            "Install Meta Quest Link": "Required for Quest 3 PCVR routing.",
-            "Custom 'Ninite' Bulk Install": "Install standard suite: Chrome/Firefox, Steam, Epic Games, Discord.",
-            "Media & Viewing Suite": "Install VLC Media Player, SVP (SmoothVideo Project), IrfanView (images), Calibre (ebooks).",
-            "Power User Utilities": "Install VoidTools Everything, Directory Opus, DisplayFusion, TeraCopy, WizTree.",
-            "Initialize & Validate RAID 0 Volume (Post-Build)": "In Disk Management, initialize/format the new RAID 0 volume (if needed), assign drive letter, run a quick health/speed sanity check, then restore data workflows to the new array.",
-            "Restoration Protocol: Keep Same Folder Layout": "<b>Rule</b>: put things back in the same folders they used before the wipe.<br><br><b>Apply to</b>: media roots, watch folders, scripts, app config directories, and mapped drive targets.<br><br><b>Why it matters</b>: changing folder locations can break automation, library links, and resume states.",
-            "Restore Core App Configs (Priority Order)": "<b>Order</b>: qBittorrent/SABnzbd -> Radarr/Sonarr -> Plex DB -> TDARR -> Voicemeeter/Synapse/Signal/Resolve/MusicBee/Cursor.<br><br><b>Action</b>: restore each app before opening dependent apps.<br><br><b>Verify</b>: launch each app once and confirm it reads restored config/state without path errors.",
-            "Restore Validation Sweep": "<b>Checklist</b>: confirm mapped drives, verify watch/download paths, run one test workflow in each core app, and sample-check file integrity on the new array.<br><br><b>Exit criteria</b>: no broken paths, no missing libraries, and no failed automation handoffs.",
+            "Radarr/Sonarr Database Exports": "<p>Each app: System → Backup → save ZIP somewhere safe.</p>",
+            "SABnzbd config.ini & Scripts": "<p>Copy SABnzbd admin config.ini plus any custom script folders.</p>",
+            "TDARR Plugin & Node Configs": "<p>Export/copy TDARR JSON configs from install paths.</p>",
+            "Plex Metadata/Watched States": "<p>Back up Plex library DB under AppData (stop Plex first if restoring later).</p>",
+            "qBittorrent .fastresume & Categories": "<p>Copy BT_backup and qBittorrent.ini from LocalAppData.</p>",
+            "Directory Opus .ocfg Export": "<p>Opus: Settings → Backup/Restore → export .ocfg.</p>",
+            "Voicemeeter XML Routing": "<p>Voicemeeter: Save Settings → keep the .xml.</p>",
+            "Synapse 4 Macros & Profiles": "<p>Export Synapse XML profiles for Tartarus/Naga locally.</p>",
+            "Signal Desktop Local Messages": "<p>Use Signal’s backup/export if you rely on local history.</p>",
+            "Resolve Studio PowerBins & LUTs": "<p>Export PowerBins; copy your LUT folder from ProgramData.</p>",
+            "MusicBee Backup (Library & AppData)": "<p>MusicBee library backup to disk, or copy .mbl + AppData MusicBee.</p>",
+            "Cursor App & Settings Backup": "<p>Copy Cursor User + globalStorage and .cursor folder to backup media.</p>",
+            "DisplayFusion License Unhooking": "<p>Save license key; deactivate this PC in Binary Fortress account.</p>",
+            "Camo Studio License Unhooking": "<p>Sign out / deactivate device in Camo to free the seat.</p>",
+            "Voicemeeter License Ledger Backup": "<p>Store license code + transaction ID for REGEN after reinstall.</p>",
+            "Transfer B: Drive Files + New RAID Prep": "<p>Move B: data off to verified storage; new RAID step wipes B:.</p>",
 
-            "Restore Radarr/Sonarr Databases (same folders)": "<b>Restore</b>: import backup ZIPs in both apps.<br><br><b>Folder check</b>: keep root folders and download client paths the same as before.<br><br><b>Verify</b>: run library refresh and confirm queue/health is clean.",
-            "Restore SABnzbd config.ini & Scripts (same folders)": "<b>Restore</b>: place <code>config.ini</code> and custom scripts back into original SABnzbd paths.<br><br><b>Folder check</b>: categories, script paths, and download folders should stay the same as before.<br><br><b>Verify</b>: start SABnzbd and test one scripted category.",
-            "Restore TDARR Plugin & Node Configs (same folders)": "<b>Restore</b>: copy TDARR JSON/plugin configs to original config directories.<br><br><b>Folder check</b>: keep server/node paths and plugin stack names unchanged.<br><br><b>Verify</b>: node registers and plugin stack loads without missing references.",
-            "Restore Plex Metadata/Watched States (same folders)": "<b>Restore</b>: stop Plex, replace DB/metadata in original AppData database paths, then start Plex.<br><br><b>Folder check</b>: library paths should point to the same media folders as before.<br><br><b>Verify</b>: watched states, posters, and collections are present.",
-            "Restore qBittorrent .fastresume & Categories (same folders)": "<b>Restore</b>: return <code>BT_backup</code> and <code>qBittorrent.ini</code> to original LocalAppData locations.<br><br><b>Folder check</b>: category save paths and default download locations stay the same.<br><br><b>Verify</b>: torrents resume and categories map correctly.",
-            "Restore Directory Opus .ocfg Profile": "<b>Restore</b>: import the <code>.ocfg</code> via Directory Opus Backup/Restore.<br><br><b>Verify</b>: toolbars, aliases, scripts, hotkeys, and button banks load as expected.",
-            "Restore Synapse 4 Macros & Profiles": "<b>Restore</b>: import Synapse XML profiles/macros for Tartarus/Naga.<br><br><b>Verify</b>: profile switching works and test macros/keybinds fire correctly.",
-            "Restore Voicemeeter XML Routing": "<b>Restore</b>: load saved Voicemeeter XML/profile.<br><br><b>Verify</b>: hardware I/O buses, strip routing, and monitor path are correct with a quick mic/playback test.",
-            "Restore Signal Desktop Local Data": "<b>Restore</b>: point Signal Desktop to restored local data (if used) and complete relink if prompted.<br><br><b>Verify</b>: message history appears and current device stays linked.",
-            "Restore Resolve Studio PowerBins & LUTs": "<b>Restore</b>: import PowerBins and place LUT folder back into Resolve LUT path.<br><br><b>Verify</b>: LUTs appear in color page and PowerBins load in a test project.",
-            "Restore MusicBee Library & AppData (same folders)": "<b>Restore</b>: import MusicBee backup or copy library/AppData files back to matching paths.<br><br><b>Folder check</b>: library roots and custom folder mappings stay the same.<br><br><b>Verify</b>: playlists, ratings, and links resolve correctly.",
-            "Restore Cursor App & Settings (same folders)": "<b>Restore</b>: return <code>%APPDATA%\\Cursor\\User</code>, <code>%APPDATA%\\Cursor\\User\\globalStorage</code>, and <code>%USERPROFILE%\\.cursor</code> to original locations.<br><br><b>Folder check</b>: keep the same folder layout you had before the wipe.<br><br><b>Verify</b>: settings, rules, skills, and workspace context load after restart.",
-            "Restore DisplayFusion License": "<b>Restore</b>: open DisplayFusion and enter saved license key from <code>E:\\Backup\\licenses.txt</code>.<br><br><b>Verify</b>: app reports activated status and no seat-limit/license warning.",
-            "Restore Camo Studio License": "<b>Restore</b>: sign into Camo Studio with your licensed account on the rebuilt OS.<br><br><b>Verify</b>: premium features unlock and account page shows this device as active.",
-            "Restore Voicemeeter License (REGEN)": "<b>Restore</b>: use saved License Code + Transaction ID, then run Voicemeeter <code>REGEN</code> with the new Challenge Code.<br><br><b>Verify</b>: registration is accepted and watermark/trial restrictions are gone."
+            "Decryption Check (16TB RAID 10)": "<p>Confirm BitLocker/encryption off on B: before wipe.</p>",
+            "Rufus Build: No-Cloud/No-BitLocker": "<p>Rufus: use your ISO; enable no-cloud / no-BitLocker options as planned.</p>",
+            "Confirm English-Only Profile Paths": "<p>OOBE English (US); remove stray localized profile folders if any.</p>",
+            "Create New RAID 0 Array (B: Build Step)": "<p>RAID BIOS/utility: new RAID0 on target disks (destroys data).</p>",
+
+            "Run BCU (Bulk Crap Uninstaller)": "<p>BCU: remove bloat, telemetry, OneDrive as per your list.</p>",
+            "Mount Synology NAS Drives": "<p>Map P/W/X/Y/Z via Synology Assistant to NAS paths.</p>",
+            "Install Meta Quest Link": "<p>Install Quest Link for PCVR.</p>",
+            "Custom 'Ninite' Bulk Install": "<p>Batch install your core browser/game/social apps.</p>",
+            "Media & Viewing Suite": "<p>VLC, SVP, IrfanView, Calibre — your media stack.</p>",
+            "Power User Utilities": "<p>Everything, Opus, DisplayFusion, TeraCopy, WizTree, etc.</p>",
+            "Initialize & Validate RAID 0 Volume (Post-Build)": "<p>Disk Management: init, letter, quick test, then use B: normally.</p>",
+            "Restoration Protocol: Keep Same Folder Layout": "<p>Restore files to the same paths as before so apps still resolve.</p>",
+            "Restore Core App Configs (Priority Order)": "<p>Restore download stack first, then media apps, then peripherals/creative.</p>",
+            "Restore Validation Sweep": "<p>Smoke-test each app: paths, queues, one real workflow each.</p>",
+
+            "Restore Radarr/Sonarr Databases (same folders)": "<p>Import ZIP backups; same root/download paths.</p>",
+            "Restore SABnzbd config.ini & Scripts (same folders)": "<p>Drop config + scripts back; test one category.</p>",
+            "Restore TDARR Plugin & Node Configs (same folders)": "<p>Copy JSON back; confirm node + stacks load.</p>",
+            "Restore Plex Metadata/Watched States (same folders)": "<p>Stop Plex, restore DB bundle, start; libraries unchanged.</p>",
+            "Restore qBittorrent .fastresume & Categories (same folders)": "<p>Restore BT_backup + ini; confirm resume + categories.</p>",
+            "Restore Directory Opus .ocfg Profile": "<p>Import .ocfg; check layouts and buttons.</p>",
+            "Restore Synapse 4 Macros & Profiles": "<p>Import XML; test macro keys.</p>",
+            "Restore Voicemeeter XML Routing": "<p>Load XML; quick route/mic sanity check.</p>",
+            "Restore Signal Desktop Local Data": "<p>Restore backup if used; complete relink if asked.</p>",
+            "Restore Resolve Studio PowerBins & LUTs": "<p>Import bins + LUTs; open a test project.</p>",
+            "Restore MusicBee Library & AppData (same folders)": "<p>Import backup or copy library files back.</p>",
+            "Restore Cursor App & Settings (same folders)": "<p>Copy User, globalStorage, .cursor back; restart Cursor.</p>",
+            "Restore DisplayFusion License": "<p>Enter saved key; confirm activated.</p>",
+            "Restore Camo Studio License": "<p>Sign in; confirm premium on this device.</p>",
+            "Restore Voicemeeter License (REGEN)": "<p>REGEN with saved codes + new challenge response.</p>"
         };
 
         const sections = {
@@ -788,6 +788,14 @@
             ]
         };
 
+        function escapeHtml(text) {
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
         function toggleProtocol(task) {
             if (cloudMode && !isOwner) return;
             const panel = document.getElementById('info-panel');
@@ -796,7 +804,7 @@
                 lastTask = null; return;
             }
             document.getElementById('info-title').innerText = task;
-            document.getElementById('info-content').innerHTML = protocols[task] || "No specific instructions found.";
+            document.getElementById('info-content').innerHTML = protocols[task] || "<p>No protocol text yet for this task.</p>";
             panel.classList.add('active'); lastTask = task;
         }
 
@@ -818,7 +826,7 @@
                     const itemsHtml = g.items.map((item, iIdx) => {
                         const iID = `${id}_g${gIdx}_i${iIdx}`;
                         if(saved[iID]) checked++;
-                        return `<li><input type="checkbox" id="${iID}" ${saved[iID] ? 'checked' : ''} ${!canEdit() ? 'disabled' : ''}><span class="task-text" onclick="toggleProtocol('${item}')">${item}</span></li>`;
+                        return `<li><input type="checkbox" id="${iID}" ${saved[iID] ? 'checked' : ''} ${!canEdit() ? 'disabled' : ''}><span class="task-text" role="button" tabindex="0" onclick='toggleProtocol(${JSON.stringify(item)})'>${escapeHtml(item)}</span></li>`;
                     }).join('');
                     if(checked === g.items.length) div.classList.add('completed');
                     div.innerHTML = `<div class="cat-header">${g.title}</div><ul>${itemsHtml}</ul>`;
