@@ -73,29 +73,33 @@
 
         @keyframes hubShimmerSweep {
             0% { background-position: 0% 50%; }
-            100% { background-position: 200% 50%; }
+            100% { background-position: 100% 50%; }
         }
 
-        /** Cyan / ice / magenta sweep — matches hub palette */
+        /** Cyan / ice / magenta sweep — matches hub palette; long linear sweep for smooth drift */
         .hub-shimmer-text {
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.18em;
             background-image: linear-gradient(
-                92deg,
+                100deg,
                 var(--accent-blue) 0%,
-                #b8f6ff 18%,
-                #ff5c8a 42%,
-                var(--accent-blue) 62%,
-                #7dd3fc 82%,
+                #6ee7ff 14%,
+                #b8f6ff 28%,
+                #e0d4ff 40%,
+                #ff7eb3 52%,
+                #ff5c8a 58%,
+                #c4b5fd 68%,
+                var(--accent-blue) 80%,
+                #93c5fd 90%,
                 var(--accent-blue) 100%
             );
-            background-size: 220% 100%;
+            background-size: 280% 100%;
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             -webkit-text-fill-color: transparent;
-            animation: hubShimmerSweep 5.2s ease-in-out infinite;
+            animation: hubShimmerSweep 16s linear infinite;
         }
 
         @supports not (background-clip: text) {
@@ -132,6 +136,36 @@
 
         .content-area .page > h2.page-top-title.hub-shimmer-text {
             letter-spacing: 0.06em;
+        }
+
+        /** Quiet landing title — no shimmer, sentence case */
+        .page-brief-hero {
+            text-transform: none;
+            letter-spacing: 0.03em;
+            font-weight: 600;
+            font-size: clamp(1.35rem, 2.8vw, 1.75rem);
+            color: var(--text-main);
+        }
+
+        .hub-lede {
+            width: min(100%, 880px);
+            margin: -0.5rem auto 1.25rem auto;
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .home-actions {
+            width: min(100%, 880px);
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .home-actions .action-btn {
+            margin-top: 0;
         }
 
         .section-home-jump.hub-shimmer-text:hover {
@@ -208,6 +242,7 @@
             flex: 1;
             min-height: 0;
             overflow: hidden;
+            box-sizing: border-box;
         }
 
         footer.bottom-progress-bar {
@@ -505,12 +540,16 @@
                 display: flex;
                 flex-direction: column;
                 grid-area: hubstack;
-                position: sticky;
+                position: fixed;
                 top: 0;
+                left: 0;
+                right: 0;
                 z-index: 120;
+                padding-top: env(safe-area-inset-top, 0px);
                 background: rgba(10, 17, 30, 0.98);
                 backdrop-filter: blur(15px);
                 border-bottom: 2px solid var(--accent-blue-subdue);
+                box-shadow: 0 6px 28px rgba(0, 0, 0, 0.45);
             }
 
             .top-audio-bar {
@@ -551,6 +590,7 @@
                 grid-area: hubmain;
                 flex-direction: column;
                 overflow: visible;
+                padding-top: var(--hub-mobile-top-pad, 0px);
             }
 
             nav {
@@ -679,7 +719,8 @@
         </header>
 
         <nav>
-            <button id="nav-overview" class="nav-btn active" onclick="showPage('overview')">00 Launchpad</button>
+            <button id="nav-home" class="nav-btn active" onclick="showPage('home')">Brief</button>
+            <button id="nav-hub" class="nav-btn" onclick="showPage('hub')">Hub</button>
             <button id="nav-logistics" class="nav-btn" onclick="showPage('logistics')">01 Procurement</button>
             <button id="nav-physical" class="nav-btn" onclick="showPage('physical')">02 Hardware</button>
             <button id="nav-backups" class="nav-btn" onclick="showPage('backups')">03 Preservation</button>
@@ -692,27 +733,32 @@
     <div class="master-container">
         <div class="main-content">
             <main class="content-area">
-                <div id="overview" class="page active">
-                    <h2 class="page-top-title hub-shimmer-text">Launchpad</h2>
+                <div id="home" class="page active">
+                    <h2 class="page-top-title page-brief-hero">Mission brief</h2>
                     <div class="mission-block">
                         <h3>Summary</h3>
                         <p>Total workstation overhaul: physical cooling refresh, hardware relocation, and a pure-offline Windows 11 purification sweep.</p>
                     </div>
-                    <div class="mission-block">
-                        <h3>End-State</h3>
-                        <p>better PC</p>
+                    <div class="home-actions">
+                        <button type="button" class="action-btn" onclick="showPage('hub')">Open mission hub</button>
+                        <button type="button" class="action-btn" onclick="showPage('visualize')">Notes vault</button>
                     </div>
+                </div>
+
+                <div id="hub" class="page">
+                    <h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('home')" title="Back to mission brief">Mission hub</h2>
+                    <p class="hub-lede">Pick a phase from the nav or a milestone below.</p>
                     <div id="mission-milestones"></div>
                 </div>
 
-                <div id="logistics" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">01 Procurement</h2><div id="procure-list"></div></div>
-                <div id="physical" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">02 Hardware</h2><div id="phys-list"></div></div>
-                <div id="backups" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">03 Preservation</h2><div id="backup-list"></div></div>
-                <div id="software" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">04 Execution</h2><div id="exec-list"></div></div>
-                <div id="rebuild" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">05 Rebuild</h2><div id="rebuild-list"></div></div>
+                <div id="logistics" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('hub')" title="Return to mission hub">01 Procurement</h2><div id="procure-list"></div></div>
+                <div id="physical" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('hub')" title="Return to mission hub">02 Hardware</h2><div id="phys-list"></div></div>
+                <div id="backups" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('hub')" title="Return to mission hub">03 Preservation</h2><div id="backup-list"></div></div>
+                <div id="software" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('hub')" title="Return to mission hub">04 Execution</h2><div id="exec-list"></div></div>
+                <div id="rebuild" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('hub')" title="Return to mission hub">05 Rebuild</h2><div id="rebuild-list"></div></div>
                 
                 <div id="visualize" class="page">
-                    <h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">06 Notes Vault</h2>
+                    <h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('hub')" title="Return to mission hub">06 Notes Vault</h2>
                     <div id="auth-wrap" class="auth-wrap">
                         <div id="auth-status" class="auth-status">Cloud sync: local-only mode.</div>
                         <div class="auth-row">
@@ -1166,6 +1212,7 @@
 
         /** Newest-first sort key in `iso`; shown labels in `display`. */
         const siteBuildChangelog = [
+            { iso: "2026-04-17T18:00:00Z", display: "4/17/2026 — PM", source: "Cursor + deploy", text: "Split landing into Brief (summary + entry actions) and Hub (milestones + phase nav); mobile top cluster fixed with content offset; smoother hub shimmer; removed End-State block." },
             { iso: "2026-04-17T00:20:00Z", display: "4/17/2026 — early AM", source: "Cursor + deploy", text: "Notes Vault: removed Personal Notes blurb, merged orange deploy log and cyan notes into one date-sorted timeline, editor on top when signed in and slim read-only strip when not." },
             { iso: "2026-04-16T23:55:00Z", display: "4/16/2026 — late PM", source: "Cursor + deploy", text: "Centered hub status and page hero titles (left type inside centered column), added cyan–magenta shimmer to hub, section, footer, and protocol titles." },
             { iso: "2026-04-16T23:30:00Z", display: "4/16/2026 — evening", source: "Cursor + deploy", text: "Added Prev track control with shuffle history and an orange Site build changelog block in Notes Vault." },
@@ -1375,15 +1422,45 @@
             });
         }
 
+        const hubMobileTopMq = window.matchMedia('(max-width: 980px)');
+        let hubTopClusterResizeObs = null;
+        function syncHubMobileTopPad() {
+            const cluster = document.querySelector('.hub-top-cluster');
+            if (!cluster) return;
+            if (!hubMobileTopMq.matches) {
+                document.documentElement.style.removeProperty('--hub-mobile-top-pad');
+                return;
+            }
+            const h = Math.ceil(cluster.getBoundingClientRect().height);
+            if (h > 0) document.documentElement.style.setProperty('--hub-mobile-top-pad', h + 'px');
+        }
+        function initHubMobileTopPad() {
+            syncHubMobileTopPad();
+            window.addEventListener('resize', syncHubMobileTopPad);
+            window.addEventListener('orientationchange', syncHubMobileTopPad);
+            hubMobileTopMq.addEventListener('change', syncHubMobileTopPad);
+            const cluster = document.querySelector('.hub-top-cluster');
+            if (cluster && typeof ResizeObserver !== 'undefined' && !hubTopClusterResizeObs) {
+                hubTopClusterResizeObs = new ResizeObserver(() => syncHubMobileTopPad());
+                hubTopClusterResizeObs.observe(cluster);
+            }
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncHubMobileTopPad);
+            requestAnimationFrame(() => requestAnimationFrame(syncHubMobileTopPad));
+        }
+
         function showPage(id) {
+            const page = document.getElementById(id);
+            const navBtn = document.getElementById('nav-' + id);
+            if (!page || !navBtn) return;
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            document.getElementById('nav-' + id).classList.add('active');
+            page.classList.add('active');
+            navBtn.classList.add('active');
             const panel = document.getElementById('info-panel');
             panel.classList.remove('active');
             lastTask = null;
             syncInstructionPanelVisibility();
+            syncHubMobileTopPad();
         }
 
         function loadRuntimeJournalEntries() {
@@ -1541,6 +1618,7 @@
 
         (async function boot() {
             await initCloudMode();
+            initHubMobileTopPad();
             renderAll();
             renderVaultTimeline();
         })();
