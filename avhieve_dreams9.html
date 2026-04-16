@@ -53,19 +53,77 @@
             flex-shrink: 0;
         }
 
-        @keyframes pulseGlow { 
-            0% { opacity: 0.8; } 
-            50% { opacity: 1; text-shadow: 0 0 10px var(--accent-blue); } 
-            100% { opacity: 0.8; } 
+        @keyframes pulseGlow {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; text-shadow: 0 0 10px var(--accent-blue); }
+            100% { opacity: 0.8; }
         }
 
-        #audio-status { 
-            font-size: 0.75rem; 
-            color: var(--accent-blue); 
-            font-weight: bold; 
-            text-transform: uppercase; 
-            letter-spacing: 4px;
-            animation: pulseGlow 3s infinite;
+        @keyframes hubShimmerSweep {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        /** Cyan / ice / magenta sweep — matches hub palette */
+        .hub-shimmer-text {
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            background-image: linear-gradient(
+                92deg,
+                var(--accent-blue) 0%,
+                #b8f6ff 18%,
+                #ff5c8a 42%,
+                var(--accent-blue) 62%,
+                #7dd3fc 82%,
+                var(--accent-blue) 100%
+            );
+            background-size: 220% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            animation: hubShimmerSweep 5.2s ease-in-out infinite;
+        }
+
+        @supports not (background-clip: text) {
+            .hub-shimmer-text {
+                color: var(--accent-blue);
+                -webkit-text-fill-color: var(--accent-blue);
+                background: none;
+                animation: pulseGlow 3s ease-in-out infinite;
+            }
+        }
+
+        .hub-status-wrap {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #audio-status {
+            font-size: 0.75rem;
+            display: inline-block;
+            text-align: left;
+            max-width: min(100%, 920px);
+        }
+
+        .content-area .page > h2.page-top-title {
+            width: min(100%, 880px);
+            margin: 0 auto 1.5rem auto;
+            text-align: left;
+            font-size: clamp(1.45rem, 3.2vw, 2.05rem);
+            font-weight: 800;
+            line-height: 1.15;
+        }
+
+        .content-area .page > h2.page-top-title.hub-shimmer-text {
+            letter-spacing: 0.06em;
+        }
+
+        .section-home-jump.hub-shimmer-text:hover {
+            filter: brightness(1.12) saturate(1.08);
         }
 
         .audio-bar-row {
@@ -172,12 +230,11 @@
             gap: 20px;
         }
 
-        .progress-label { 
-            font-size: 0.8rem; 
-            color: var(--accent-blue); 
-            font-weight: bold; 
-            text-transform: uppercase; 
-            letter-spacing: 2px; 
+        .progress-label {
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
             white-space: nowrap;
         }
         
@@ -222,7 +279,20 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        .instruction-panel h3 { color: var(--accent-blue); border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-top: 0; }
+        .instruction-panel h3 {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+
+        .instruction-panel h3:not(.hub-shimmer-text) {
+            color: var(--accent-blue);
+        }
+
+        #info-title.hub-shimmer-text {
+            letter-spacing: 0.07em;
+            font-size: 1.02rem;
+        }
         .instruction-panel code { background: #000; color: #00ffcc; padding: 3px 8px; border-radius: 4px; font-family: 'Consolas', monospace; }
 
         .mission-block { background: rgba(0, 224, 255, 0.05); border: 1px solid var(--accent-blue-subdue); padding: 25px; border-radius: 12px; margin-bottom: 35px; }
@@ -359,9 +429,8 @@
             }
 
             #audio-status {
-                letter-spacing: 2px;
+                letter-spacing: 0.14em;
                 font-size: 0.68rem;
-                text-align: center;
             }
 
             .audio-bar-row {
@@ -498,7 +567,9 @@
 <body>
 
     <header class="top-audio-bar">
-        <span id="audio-status">Initializing Audio...</span>
+        <div class="hub-status-wrap">
+            <span id="audio-status" class="hub-shimmer-text">Initializing Audio...</span>
+        </div>
         <div class="audio-bar-row">
             <audio id="dream-audio" controls autoplay>
                 <source src="Pristine_State.mp3" type="audio/mpeg">
@@ -525,7 +596,7 @@
         <div class="main-content">
             <main class="content-area">
                 <div id="overview" class="page active">
-                    <h2>Launchpad</h2>
+                    <h2 class="page-top-title hub-shimmer-text">Launchpad</h2>
                     <div class="mission-block">
                         <h3>Summary</h3>
                         <p>Total workstation overhaul: physical cooling refresh, hardware relocation, and a pure-offline Windows 11 purification sweep.</p>
@@ -537,14 +608,14 @@
                     <div id="mission-milestones"></div>
                 </div>
 
-                <div id="logistics" class="page"><h2 class="section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">01 Procurement</h2><div id="procure-list"></div></div>
-                <div id="physical" class="page"><h2 class="section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">02 Hardware</h2><div id="phys-list"></div></div>
-                <div id="backups" class="page"><h2 class="section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">03 Preservation</h2><div id="backup-list"></div></div>
-                <div id="software" class="page"><h2 class="section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">04 Execution</h2><div id="exec-list"></div></div>
-                <div id="rebuild" class="page"><h2 class="section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">05 Rebuild</h2><div id="rebuild-list"></div></div>
+                <div id="logistics" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">01 Procurement</h2><div id="procure-list"></div></div>
+                <div id="physical" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">02 Hardware</h2><div id="phys-list"></div></div>
+                <div id="backups" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">03 Preservation</h2><div id="backup-list"></div></div>
+                <div id="software" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">04 Execution</h2><div id="exec-list"></div></div>
+                <div id="rebuild" class="page"><h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">05 Rebuild</h2><div id="rebuild-list"></div></div>
                 
                 <div id="visualize" class="page">
-                    <h2 class="section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">06 Notes Vault</h2>
+                    <h2 class="page-top-title hub-shimmer-text section-home-jump" onclick="showPage('overview')" title="Return to 00 Launchpad">06 Notes Vault</h2>
                     <div class="mission-block">
                         <h3>Personal Notes</h3>
                         <p>Offline-first for Galaxy S25 Ultra: this page runs without internet, and you can export/import a full local snapshot (tasks + notes + runtime timeline) before any OS wipe.</p>
@@ -581,7 +652,7 @@
             </main>
 
             <aside id="info-panel" class="instruction-panel">
-                <h3 id="info-title">Instructional Data</h3>
+                <h3 id="info-title" class="hub-shimmer-text">Instructional Data</h3>
                 <div id="info-content">Select task text to toggle protocols.</div>
             </aside>
         </div>
@@ -589,7 +660,7 @@
 
     <footer class="bottom-progress-bar">
         <div class="progress-wrapper">
-            <span class="progress-label">System Restoration</span>
+            <span class="progress-label hub-shimmer-text">System Restoration</span>
             <div class="progress-bar-container"><div class="progress-fill" id="global-progress"></div></div>
             <span id="progress-percent" class="progress-percent">0%</span>
         </div>
@@ -998,6 +1069,7 @@
 
         /** Newest-first sort key in `iso`; shown labels in `display`. */
         const siteBuildChangelog = [
+            { iso: "2026-04-16T23:55:00Z", display: "4/16/2026 — late PM", source: "Cursor + deploy", text: "Centered hub status and page hero titles (left type inside centered column), added cyan–magenta shimmer to hub, section, footer, and protocol titles." },
             { iso: "2026-04-16T23:30:00Z", display: "4/16/2026 — evening", source: "Cursor + deploy", text: "Added Prev track control with shuffle history and an orange Site build changelog block in Notes Vault." },
             { iso: "2026-04-16T22:00:00Z", display: "4/16/2026 — PM", source: "Cursor + deploy", text: "Media bar: Forward (+15s) and Next; section h2 titles jump to Launchpad; protocols expanded; mobile instruction sheet height set to ~30vh." },
             { iso: "2026-04-16T20:30:00Z", display: "4/16/2026 — PM", source: "Cursor + deploy", text: "Fixed task protocol clicks for names with quotes or ampersands; rewrote protocol blurbs into structured short sections." },
